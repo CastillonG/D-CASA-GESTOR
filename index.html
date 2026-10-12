@@ -416,12 +416,61 @@ function applyChartDefaults(){
 const PALETTE = ['#2e1a0c','#b9772f','#8a6a46','#d9a85c','#8f4a34','#c7a378'];
 
 // ---------- init db ----------
+// >>> PEGA AQUÍ tu firebaseConfig (Firebase → Configuración del proyecto → Tus apps → Web) <<<
+const firebaseConfig = {
+  apiKey: "AIzaSyBUS537-dacXcT87qiELA7Ur72oLFGA_WY",
+  authDomain: "d-casa-gestor.firebaseapp.com",
+  projectId: "d-casa-gestor",
+  storageBucket: "d-casa-gestor.firebasestorage.app",
+  messagingSenderId: "915219392366",
+  appId: "1:915219392366:web:a6931eac84e7a1a236c37f"
+};
+
+async function initFirebase(){
+  const V = 'https://www.gstatic.com/firebasejs/10.12.2/';
+  const [{initializeApp}, A, F] = await Promise.all([
+    import(V+'firebase-app.js'), import(V+'firebase-auth.js'), import(V+'firebase-firestore.js')
+  ]);
+  const app = initializeApp(firebaseConfig);
+  const auth = A.getAuth(app);
+  const fs = F.getFirestore(app);
+
+  let user = await new Promise(res=>{ const un = A.onAuthStateChanged(auth, u=>{ un(); res(u); }); });
+  if(!user){
+    $status.innerHTML = '<button id="loginBtn" class="btn-primary">Entrar con Google</button>';
+    user = await new Promise(res=>{
+      document.getElementById('loginBtn').onclick = async ()=>{
+        try{ const r = await A.signInWithPopup(auth, new A.GoogleAuthProvider()); res(r.user); }
+        catch(e){ alert('No se pudo iniciar sesión: '+(e && e.code ? e.code : 'error')); }
+      };
+    });
+  }
+  $status.innerHTML = 'Sesión: '+esc(user.email)+' · guardado en la nube · <button id="logoutBtn" class="text-xs" style="text-decoration:underline">salir</button>';
+  document.getElementById('logoutBtn').onclick = async ()=>{ await A.signOut(auth); location.reload(); };
+
+  // Adaptador con la misma interfaz que usa el resto de la app
+  return {
+    collection: name => ({
+      get: async ()=>{
+        const s = await F.getDocs(F.collection(fs, name));
+        return { docs: s.docs.map(d=>({ id:d.id, data:()=>d.data() })) };
+      },
+      doc: id => ({
+        set: data => F.setDoc(F.doc(fs, name, id), data),
+        delete: () => F.deleteDoc(F.doc(fs, name, id))
+      })
+    })
+  };
+}
+
 (async function init(){
   try{
-    DB = await window.claude.use('db');
-    if(DB){ $status.textContent = 'Guardado en tu cuenta · disponible en todos tus dispositivos'; }
-    else { $status.textContent = 'Almacenamiento no disponible en esta vista.'; }
-  }catch(e){ $status.textContent = 'No se pudo conectar el almacenamiento.'; }
+    if(!firebaseConfig.apiKey || firebaseConfig.apiKey === 'PEGA_AQUI'){
+      $status.textContent = 'Falta pegar el firebaseConfig en el archivo.';
+    } else {
+      DB = await initFirebase();
+    }
+  }catch(e){ console.error(e); $status.textContent = 'No se pudo conectar con Firebase ('+(e && e.code ? e.code : 'error')+').'; }
   finally{ dbReadyResolve(); applyChartDefaults(); }
 })();
 
