@@ -1,2 +1,908 @@
-# D-CASA-GESTOR
-Gestor de negocios de D´CASA
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>D'Casa Angel's Bakery · Gestión</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    /* Paleta "ledger de panadería": espresso oscuro + caramelo, sobre papel cálido */
+    --maroon-950:#1c0f06; --maroon-900:#2e1a0c; --maroon-800:#44270f; --maroon-700:#5c3317;
+    --gold:#e3b35a; --gold-soft:#fbf3e2; --cream:#f4ecdb; --card-bg:#fffcf5;
+    --text-main:#241206; --text-soft:#8a6a46; --border-c:#e3d5bd;
+    --danger:#a8402f; --ok:#4f7a4a; --accent:#b9772f;
+    --chart1:#2e1a0c; --chart2:#b9772f; --chart3:#8a6a46; --chart4:#d9a85c; --chart5:#8f4a34;
+    --font-serif:'Fraunces', Georgia, serif;
+    --font-sans:'Inter', -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --card-bg:#241506; --cream:#180e04; --text-main:#f3e7d2; --text-soft:#c7a378; --border-c:#4a3420; --accent:#d79a4c;
+    }
+  }
+  :root[data-theme="dark"]{
+    --card-bg:#241506; --cream:#180e04; --text-main:#f3e7d2; --text-soft:#c7a378; --border-c:#4a3420; --accent:#d79a4c;
+  }
+  body{ background:var(--cream); color:var(--text-main); font-family:var(--font-sans); }
+  h1,h2,.brand-name,.chart-title,.kpi .val,.home-btn .lbl,.sec-title{ font-family:var(--font-serif); }
+  h2.text-lg{ font-weight:500; font-size:1.5rem; letter-spacing:-.01em; }
+
+  .card{ background:var(--card-bg); border:1px solid var(--border-c); border-radius:.6rem; }
+
+  /* ---- Botones: planos, mínimos, sin sombra ni rebote ---- */
+  button{ cursor:pointer; }
+  .btn-primary, .btn-soft{
+    background:transparent; border:1px solid var(--text-main);
+    color:var(--text-main); border-radius:.35rem; font-weight:500; font-size:.85rem;
+    padding:.5rem 1rem; transition:background .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .btn-primary:hover{ background:var(--text-main); color:var(--card-bg); }
+  .btn-soft{ border-color:var(--accent); color:var(--accent); }
+  .btn-soft:hover{ background:var(--accent); color:var(--card-bg); border-color:var(--accent); }
+
+  /* botones de icono/texto simples (eliminar, editar) */
+  button.text-xs{ background:none; border:none; padding:.1rem 0; text-decoration:underline; text-decoration-color:transparent; transition:text-decoration-color .15s; }
+  button.text-xs:hover{ text-decoration-color:currentColor; }
+
+  .home-btn{
+    background:transparent; border:none; border-bottom:1px solid var(--border-c); border-radius:0;
+    transition:background .15s ease; padding:1.1rem .5rem !important;
+  }
+  .home-btn:hover{ background:rgba(185,119,47,.07); }
+  .home-btn .lbl{ font-size:.95rem; font-weight:500; }
+
+  input, select, textarea{ background:var(--card-bg); border:1px solid var(--border-c); color:var(--text-main); border-radius:.4rem; padding:.4rem .6rem; font-family:var(--font-sans); }
+  input:focus, select:focus, textarea:focus{ outline:2px solid var(--accent); outline-offset:1px; }
+  table{ border-collapse:collapse; width:100%; font-size:.85rem; }
+  th{ text-align:left; color:var(--text-soft); font-weight:600; padding:.5rem .5rem; border-bottom:1px solid var(--text-main); font-size:.75rem; }
+  td{ padding:.55rem .5rem; border-bottom:1px solid var(--border-c); }
+  .pagado-row{ opacity:.5; }
+
+  /* ---- Tabs: subrayado mínimo ---- */
+  .tab-btn{
+    background:transparent !important; border:none !important; border-radius:0 !important;
+    color:var(--text-soft); font-weight:500; padding:.4rem 0 !important; margin-right:1.3rem;
+    border-bottom:1px solid transparent; transition:color .15s, border-color .15s;
+  }
+  .tab-btn:hover{ color:var(--text-main); }
+  .tab-btn.active{ color:var(--text-main); border-bottom-color:var(--accent); border-bottom-width:2px; }
+
+  .scrollx{ overflow-x:auto; }
+  ::-webkit-scrollbar{ height:6px; width:6px; } ::-webkit-scrollbar-thumb{ background:var(--border-c); border-radius:3px; }
+
+  .brand-header{ background:var(--maroon-900); border-radius:.6rem; border-bottom:2px solid var(--accent); }
+  .brand-name{ font-style:italic; font-weight:500; letter-spacing:0; }
+
+  .kpi{ border-bottom:1px solid var(--border-c); border-radius:0; padding:0 0 .6rem 0; background:transparent; }
+  .kpi .lbl{ font-size:.72rem; color:var(--text-soft); font-weight:500; }
+  .kpi .val{ font-size:1.6rem; font-weight:500; color:var(--text-main); line-height:1.15; }
+  button.kpi{ display:block; width:100%; text-align:left; transition:border-color .15s; }
+  button.kpi:hover{ border-bottom-color:var(--accent); }
+
+  /* ---- Hub: calendario ---- */
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+  .cal-dow{ font-size:.7rem; color:var(--text-soft); text-align:center; padding:.2rem 0; }
+  .cal-day{ min-height:44px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; border-radius:.35rem; font-size:.85rem; background:transparent; border:1px solid transparent; color:var(--text-main); }
+  .cal-day:hover{ background:rgba(185,119,47,.09); }
+  .cal-day.today{ border-color:var(--accent); }
+  .cal-day.sel{ background:var(--text-main); color:var(--card-bg); }
+  .cal-dots{ display:flex; gap:2px; height:5px; }
+  .cal-dots i, .dot{ width:6px; height:6px; border-radius:50%; display:inline-block; flex-shrink:0; }
+  .cal-dots i{ width:5px; height:5px; }
+  .cal-day.sel .cal-dots i{ outline:1px solid var(--card-bg); }
+  .hub-row{ display:flex; gap:.6rem; align-items:center; padding:.5rem 0; border-bottom:1px solid var(--border-c); width:100%; text-align:left; font-size:.85rem; }
+  button.hub-row:hover{ background:rgba(185,119,47,.07); }
+
+  .chart-card{ background:var(--card-bg); border:1px solid var(--border-c); border-radius:.6rem; padding:1.1rem; }
+  .chart-title{ font-size:1rem; font-style:italic; font-weight:500; color:var(--text-main); margin-bottom:.7rem; }
+
+  .save-indicator{ position:fixed; bottom:14px; right:14px; background:var(--text-main); color:var(--card-bg); padding:.4rem .8rem; border-radius:.35rem; font-size:.75rem; z-index:50; transition:opacity .2s; }
+</style>
+</head>
+<body class="min-h-screen">
+<div id="app" class="max-w-5xl mx-auto p-4 pb-16">
+  <header class="brand-header flex items-center justify-between mb-6 px-4 py-3">
+    <div id="brandLogo" class="flex items-center gap-3">
+      <div style="width:34px;height:34px;border:1px solid var(--gold);border-radius:.3rem;display:flex;align-items:center;justify-content:center;color:var(--gold);font-family:var(--font-serif);font-style:italic;font-size:1.1rem">D</div>
+      <div>
+        <h1 class="brand-name text-lg" style="color:var(--gold-soft)">D'Casa Angel's Bakery</h1>
+        <p class="text-xs" style="color:var(--gold)">Gestión de brownies</p>
+      </div>
+    </div>
+    <button id="btnHome" class="hidden px-3 py-1.5 text-sm btn-soft" style="border-color:var(--gold);color:var(--gold)">← Inicio</button>
+  </header>
+
+  <div id="status" class="text-xs text-center mb-3" style="color:var(--text-soft)">Conectando almacenamiento…</div>
+
+  <div id="home"></div>
+  <div id="view" class="hidden"></div>
+</div>
+<div id="saveIndicator" class="save-indicator hidden">Guardando…</div>
+
+<script>
+const ICONS = {
+  dashboard:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>`,
+  insumos:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z" opacity="0"/><path d="M6 3h12v18H6z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>`,
+  ventas:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M15 9.5c0-1.4-1.3-2.5-3-2.5s-3 1-3 2.3c0 3 6 1.4 6 4.3 0 1.4-1.3 2.4-3 2.4s-3-1-3-2.4"/></svg>`,
+  simulacion:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>`,
+  producciones:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg>`,
+  equipo:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3.3 3-5.5 7-5.5s7 2.2 7 5.5"/><circle cx="17" cy="8" r="2.5"/><path d="M16 14.5c2.8.4 5 2.3 5 5.5"/></svg>`,
+  inventario:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7M12 11v10"/></svg>`,
+  clientes:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`,
+};
+
+const MENU = [
+  {id:'dashboard', label:'Dashboard'},
+  {id:'insumos', label:'Insumos y precios'},
+  {id:'ventas', label:'Ventas'},
+  {id:'simulacion', label:'Simulación'},
+  {id:'producciones', label:'Producciones'},
+  {id:'equipo', label:'Equipo'},
+  {id:'inventario', label:'Inventario'},
+  {id:'clientes', label:'Clientes'},
+];
+
+let DB = null;
+const $home = document.getElementById('home');
+const $view = document.getElementById('view');
+const $status = document.getElementById('status');
+const $btnHome = document.getElementById('btnHome');
+const $save = document.getElementById('saveIndicator');
+
+// ============ HUB INICIAL: datos clave + calendario + accesos ============
+const EVENT_TYPES = {entrega:'Entrega', produccion:'Producción', pago:'Cobro / pago', compra:'Compra', otro:'Otro'};
+const EVENT_COLORS = {entrega:'#b9772f', produccion:'#2e1a0c', pago:'#4f7a4a', compra:'#8f4a34', otro:'#8a6a46'};
+const pad2 = n=>String(n).padStart(2,'0');
+const ymd = d => d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtDay = key => new Date(key+'T00:00:00').toLocaleDateString('es-MX',{weekday:'long', day:'numeric', month:'long'});
+const fmtDayShort = key => new Date(key+'T00:00:00').toLocaleDateString('es-MX',{weekday:'short', day:'numeric', month:'short'});
+const moneyShort = n => '$' + Math.round(Number(n)||0).toLocaleString('es-MX');
+
+let hubData = {ventas:[], insumos:[], eventos:[], producciones:[], sabores:[]};
+let calCursor = new Date(); calCursor = new Date(calCursor.getFullYear(), calCursor.getMonth(), 1);
+let calSel = ymd(new Date());
+
+function allEventos(){
+  const auto = hubData.producciones.filter(p=>p.semana).map(p=>({
+    id:'prod_'+p.id, fecha:p.semana, auto:true, tipo:'produccion',
+    titulo:'Producción: '+(p.items||[]).reduce((a,it)=>a+num(it.cantidad),0)+' pzas'
+  }));
+  return hubData.eventos.concat(auto);
+}
+function inventarioBajo(insumos, producciones, sabores){
+  const saboresMap = Object.fromEntries(sabores.map(s=>[s.nombre,s]));
+  const semanas = new Set(); const total = {};
+  producciones.forEach(p=>{ semanas.add(p.semana); (p.items||[]).forEach(it=>{
+    const s = saboresMap[it.sabor]; if(!s) return;
+    (s.insumosUsados||[]).forEach(u=>{ total[u.insumoId]=(total[u.insumoId]||0)+u.cantidad*it.cantidad; });
+  });});
+  const n = Math.max(1, semanas.size);
+  return insumos.filter(i=> num(i.existencia) < ((total[i.id]||0)/n)*0.25 );
+}
+
+function renderHome(){
+  $home.innerHTML = `
+    <div id="hubKpis" class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6"></div>
+    <div class="grid md:grid-cols-5 gap-5 mb-8">
+      <div class="md:col-span-3 chart-card" id="calBox"></div>
+      <div class="md:col-span-2 space-y-5">
+        <div class="chart-card" id="upcomingBox"></div>
+        <div class="chart-card" id="alertsBox"></div>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-3">${MENU.map(m=>`
+      <button class="home-btn flex flex-col items-center gap-2" onclick="go('${m.id}')">
+        <div style="width:26px;height:26px;color:var(--accent)">${ICONS[m.id]}</div>
+        <span class="lbl text-center">${m.label}</span>
+      </button>`).join('')}</div>`;
+  renderCalendar();
+  refreshHub();
+}
+
+async function refreshHub(){
+  const [ventas, insumos, eventos, producciones, sabores] = await Promise.all([
+    colGet('ventas'), colGet('insumos'), colGet('eventos'), colGet('producciones'), colGet('sabores')
+  ]);
+  hubData = {ventas, insumos, eventos, producciones, sabores};
+  if(!document.getElementById('hubKpis')) return; // el usuario ya navegó a otra sección
+  renderHubKpis(); renderCalendar(); renderUpcoming(); renderAlerts();
+}
+
+function renderHubKpis(){
+  const el = document.getElementById('hubKpis'); if(!el) return;
+  const hoy = ymd(new Date()), mes = hoy.slice(0,7), en7 = ymd(new Date(Date.now()+7*86400000));
+  const vv = hubData.ventas.filter(v=>v.estado==='venta');
+  const totalMes = vv.filter(v=>(v.fecha||'').slice(0,7)===mes).reduce((a,v)=>a+num(v.monto),0);
+  const porCobrar = vv.filter(v=>!v.pagado).reduce((a,v)=>a+num(v.monto),0);
+  const bajos = inventarioBajo(hubData.insumos, hubData.producciones, hubData.sabores).length;
+  const prox = allEventos().filter(e=>e.fecha>=hoy && e.fecha<=en7).length;
+  el.innerHTML = `
+    <button class="kpi" onclick="go('dashboard')"><p class="lbl">Ventas del mes</p><p class="val">${moneyShort(totalMes)}</p></button>
+    <button class="kpi" onclick="go('ventas')"><p class="lbl">Por cobrar</p><p class="val">${moneyShort(porCobrar)}</p></button>
+    <button class="kpi" onclick="go('inventario')"><p class="lbl">Insumos por comprar</p><p class="val">${bajos}</p></button>
+    <div class="kpi"><p class="lbl">Eventos en 7 días</p><p class="val">${prox}</p></div>`;
+}
+
+function renderCalendar(){
+  const box = document.getElementById('calBox'); if(!box) return;
+  const y = calCursor.getFullYear(), m = calCursor.getMonth();
+  const startDow = (new Date(y,m,1).getDay()+6)%7; // semana inicia en lunes
+  const days = new Date(y,m+1,0).getDate();
+  const byDay = {};
+  allEventos().forEach(e=>{ (byDay[e.fecha]=byDay[e.fecha]||[]).push(e); });
+  const hoy = ymd(new Date());
+  let cells = '';
+  for(let i=0;i<startDow;i++) cells += '<span></span>';
+  for(let d=1; d<=days; d++){
+    const key = y+'-'+pad2(m+1)+'-'+pad2(d);
+    const dots = (byDay[key]||[]).slice(0,3).map(e=>`<i style="background:${EVENT_COLORS[e.tipo]||EVENT_COLORS.otro}"></i>`).join('');
+    cells += `<button class="cal-day ${key===hoy?'today':''} ${key===calSel?'sel':''}" onclick="calPick('${key}')"><span>${d}</span><span class="cal-dots">${dots}</span></button>`;
+  }
+  const mesTxt = calCursor.toLocaleDateString('es-MX',{month:'long', year:'numeric'});
+  const selEvs = byDay[calSel]||[];
+  box.innerHTML = `
+    <div class="flex items-center justify-between mb-3">
+      <p class="chart-title" style="margin:0;text-transform:capitalize">${mesTxt}</p>
+      <div class="flex gap-1">
+        <button class="btn-soft" style="padding:.2rem .65rem" onclick="calMove(-1)" aria-label="Mes anterior">‹</button>
+        <button class="btn-soft" style="padding:.2rem .65rem" onclick="calGoToday()">Hoy</button>
+        <button class="btn-soft" style="padding:.2rem .65rem" onclick="calMove(1)" aria-label="Mes siguiente">›</button>
+      </div>
+    </div>
+    <div class="cal-grid mb-1">${['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].map(d=>`<span class="cal-dow">${d}</span>`).join('')}</div>
+    <div class="cal-grid">${cells}</div>
+    <div class="mt-4 pt-3" style="border-top:1px solid var(--border-c)">
+      <p class="text-sm font-medium mb-1" style="text-transform:capitalize">${fmtDay(calSel)}</p>
+      ${selEvs.map(e=>`<div class="hub-row"><i class="dot" style="background:${EVENT_COLORS[e.tipo]||EVENT_COLORS.otro}"></i>
+        <span style="flex:1">${esc(e.titulo)} <span class="text-xs" style="color:var(--text-soft)">${EVENT_TYPES[e.tipo]||''}${e.nota?': '+esc(e.nota):''}</span></span>
+        ${e.auto?'':`<button class="text-xs" style="color:var(--danger)" onclick="delEvento('${e.id}')">eliminar</button>`}</div>`).join('')
+        || '<p class="text-xs py-2" style="color:var(--text-soft)">Sin eventos este día.</p>'}
+      <div class="grid grid-cols-2 gap-2 mt-3 text-sm">
+        <input id="ev_titulo" placeholder="Evento (ej. entrega a punto de venta)" class="col-span-2">
+        <select id="ev_tipo">${Object.entries(EVENT_TYPES).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select>
+        <input id="ev_nota" placeholder="Nota (opcional)">
+        <button class="btn-primary col-span-2" onclick="addEvento()">Agregar al calendario</button>
+      </div>
+    </div>`;
+}
+
+function renderUpcoming(){
+  const el = document.getElementById('upcomingBox'); if(!el) return;
+  const hoy = ymd(new Date()), en14 = ymd(new Date(Date.now()+14*86400000));
+  const prox = allEventos().filter(e=>e.fecha>=hoy && e.fecha<=en14).sort((a,b)=>a.fecha.localeCompare(b.fecha)).slice(0,6);
+  el.innerHTML = `<p class="chart-title">Próximos 14 días</p>` + (prox.map(e=>`
+    <button class="hub-row" onclick="calPick('${e.fecha}', true)">
+      <i class="dot" style="background:${EVENT_COLORS[e.tipo]||EVENT_COLORS.otro}"></i>
+      <span style="flex:1">${esc(e.titulo)}</span>
+      <span class="text-xs" style="color:var(--text-soft);text-transform:capitalize">${fmtDayShort(e.fecha)}</span>
+    </button>`).join('') || '<p class="text-xs" style="color:var(--text-soft)">Nada programado. Toca un día en el calendario para agregar un evento.</p>');
+}
+
+function renderAlerts(){
+  const el = document.getElementById('alertsBox'); if(!el) return;
+  const bajos = inventarioBajo(hubData.insumos, hubData.producciones, hubData.sabores);
+  const sinCerrar = hubData.ventas.filter(v=>v.estado==='venta' && !v.pagado).length;
+  const pend = hubData.ventas.filter(v=>v.estado==='pendiente').length;
+  const row = (color, txt, to) => `<button class="hub-row" onclick="go('${to}')"><i class="dot" style="background:${color}"></i><span>${txt}</span></button>`;
+  const rows = [];
+  bajos.slice(0,4).forEach(i=>rows.push(row('var(--danger)', 'Comprar '+esc(i.nombre), 'inventario')));
+  if(bajos.length>4) rows.push(row('var(--danger)', 'y '+(bajos.length-4)+' insumos más por comprar', 'inventario'));
+  if(sinCerrar) rows.push(row('var(--accent)', sinCerrar+(sinCerrar===1?' venta sin marcar como pagada':' ventas sin marcar como pagadas'), 'ventas'));
+  if(pend) rows.push(row('var(--text-soft)', pend+(pend===1?' venta pendiente':' ventas pendientes'), 'ventas'));
+  el.innerHTML = `<p class="chart-title">Requiere atención</p>` + (rows.join('') || '<p class="text-xs" style="color:var(--text-soft)">Todo en orden.</p>');
+}
+
+window.calPick = (key, jump) => {
+  calSel = key;
+  if(jump){ const d = new Date(key+'T00:00:00'); calCursor = new Date(d.getFullYear(), d.getMonth(), 1); }
+  renderCalendar();
+};
+window.calMove = delta => { calCursor = new Date(calCursor.getFullYear(), calCursor.getMonth()+delta, 1); renderCalendar(); };
+window.calGoToday = () => { const d = new Date(); calCursor = new Date(d.getFullYear(), d.getMonth(), 1); calSel = ymd(d); renderCalendar(); };
+window.addEvento = async () => {
+  const titulo = document.getElementById('ev_titulo').value.trim();
+  if(!titulo){ alert('Escribe qué pasa ese día.'); return; }
+  const ev = {fecha:calSel, titulo, tipo:document.getElementById('ev_tipo').value, nota:document.getElementById('ev_nota').value.trim()};
+  const id = uid();
+  try{
+    await docSet('eventos', id, ev);
+    hubData.eventos.push({id, ...ev});
+    renderCalendar(); renderUpcoming(); renderHubKpis();
+  }catch(e){}
+};
+window.delEvento = async id => {
+  try{
+    await docDelete('eventos', id);
+    hubData.eventos = hubData.eventos.filter(e=>e.id!==id);
+    renderCalendar(); renderUpcoming(); renderHubKpis();
+  }catch(e){}
+};
+
+window.go = function(id){
+  $home.classList.add('hidden'); $view.classList.remove('hidden'); $btnHome.classList.remove('hidden');
+  RENDERERS[id]();
+};
+$btnHome.onclick = ()=>{ $view.classList.add('hidden'); $home.classList.remove('hidden'); $btnHome.classList.add('hidden'); $view.innerHTML=''; renderHome(); };
+
+// ---------- helpers ----------
+const uid = ()=> Math.random().toString(36).slice(2,10);
+const money = n => '$' + (Number(n)||0).toLocaleString('es-MX',{minimumFractionDigits:2, maximumFractionDigits:2});
+const num = n => Number(n)||0;
+function isoWeekKey(d){
+  const date = new Date(d); date.setHours(0,0,0,0);
+  date.setDate(date.getDate() + 4 - (date.getDay()||7));
+  const yearStart = new Date(date.getFullYear(),0,1);
+  const week = Math.ceil((((date-yearStart)/86400000)+1)/7);
+  return date.getFullYear()+'-S'+String(week).padStart(2,'0');
+}
+function showSaving(on){ $save.classList.toggle('hidden', !on); }
+
+// ---------- db readiness (fixes silent failures on early clicks) ----------
+let dbReadyResolve;
+const dbReady = new Promise(res=>{ dbReadyResolve = res; });
+async function ensureDB(){ await dbReady; return DB; }
+
+async function colGet(name){
+  const db = await ensureDB();
+  if(!db) return [];
+  try{
+    const snap = await db.collection(name).get();
+    return snap.docs.map(d=>({id:d.id, ...d.data()}));
+  }catch(e){ console.error(e); return []; }
+}
+async function docSet(col,id,data){
+  const db = await ensureDB();
+  if(!db){ alert('No se pudo guardar: el almacenamiento aún no está listo. Espera un momento y vuelve a intentar.'); throw new Error('db_unavailable'); }
+  showSaving(true);
+  try{
+    await db.collection(col).doc(id).set(data);
+  }catch(e){
+    console.error(e);
+    alert('No se pudo guardar el cambio ('+(e&&e.code?e.code:'error')+'). Inténtalo de nuevo.');
+    throw e;
+  }finally{ showSaving(false); }
+}
+async function docDelete(col,id){
+  const db = await ensureDB();
+  if(!db){ alert('No se pudo eliminar: el almacenamiento aún no está listo.'); throw new Error('db_unavailable'); }
+  showSaving(true);
+  try{ await db.collection(col).doc(id).delete(); }
+  catch(e){ console.error(e); alert('No se pudo eliminar ('+(e&&e.code?e.code:'error')+').'); throw e; }
+  finally{ showSaving(false); }
+}
+
+function costoUnitarioInsumo(ins){
+  const cant = num(ins.cantidadPresentacion) || 1;
+  return num(ins.costo) / cant;
+}
+function costoEstandarInsumo(ins){
+  let factor=1, base=ins.unidad;
+  const cant = num(ins.cantidadPresentacion) || 1;
+  if(ins.unidad==='g'){ factor = 1000/cant; base='kg'; }
+  else if(ins.unidad==='kg'){ factor = 1/cant; base='kg'; }
+  else if(ins.unidad==='ml'){ factor = 1000/cant; base='l'; }
+  else if(ins.unidad==='l'){ factor = 1/cant; base='l'; }
+  else { factor = 1/cant; base='pza'; }
+  return { valor: num(ins.costo)*factor, base };
+}
+function costoProduccionSabor(sabor, insumosMap){
+  let costo = 0;
+  (sabor.insumosUsados||[]).forEach(u=>{
+    const ins = insumosMap[u.insumoId];
+    if(ins) costo += costoUnitarioInsumo(ins) * num(u.cantidad);
+  });
+  costo += num(sabor.manoObra) + num(sabor.empaque);
+  return costo;
+}
+
+// ---------- chart defaults (brand palette, legible in light/dark) ----------
+function applyChartDefaults(){
+  if(!window.Chart) return;
+  const styles = getComputedStyle(document.documentElement);
+  const textSoft = styles.getPropertyValue('--text-soft').trim() || '#8a5a34';
+  const borderC = styles.getPropertyValue('--border-c').trim() || '#ead9b4';
+  Chart.defaults.font.family = "-apple-system, 'Segoe UI', Roboto, sans-serif";
+  Chart.defaults.color = textSoft;
+  Chart.defaults.borderColor = borderC;
+  Chart.defaults.plugins.legend.labels.boxWidth = 12;
+  Chart.defaults.plugins.legend.labels.font = {size: 11};
+}
+const PALETTE = ['#2e1a0c','#b9772f','#8a6a46','#d9a85c','#8f4a34','#c7a378'];
+
+// ---------- init db ----------
+(async function init(){
+  try{
+    DB = await window.claude.use('db');
+    if(DB){ $status.textContent = 'Guardado en tu cuenta · disponible en todos tus dispositivos'; }
+    else { $status.textContent = 'Almacenamiento no disponible en esta vista.'; }
+  }catch(e){ $status.textContent = 'No se pudo conectar el almacenamiento.'; }
+  finally{ dbReadyResolve(); applyChartDefaults(); }
+})();
+
+// ============ RENDERERS ============
+const RENDERERS = {};
+
+// ---- DASHBOARD ----
+RENDERERS.dashboard = async function(){
+  $view.innerHTML = `<h2 class="text-lg font-bold mb-3">Dashboard</h2>
+    <div id="kpiRow" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4"></div>
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div class="chart-card"><p class="chart-title">📈 Tendencia de ventas (mes)</p><canvas id="chTrend" height="190"></canvas></div>
+      <div class="chart-card"><p class="chart-title">🍫 Sabores más vendidos</p><canvas id="chFlavor" height="190"></canvas></div>
+      <div class="chart-card"><p class="chart-title">⚡ Velocidad de venta (unid/semana)</p><canvas id="chSpeed" height="190"></canvas></div>
+      <div class="chart-card"><p class="chart-title">🧁 % venta por estilo (últ. 30 días)</p><canvas id="chStyle" height="190"></canvas></div>
+      <div class="chart-card sm:col-span-2"><p class="chart-title">💰 Semanas sin cerrar: pronosticado vs asignado</p><canvas id="chWeeks" height="150"></canvas></div>
+    </div>`;
+  applyChartDefaults();
+  const ventas = await colGet('ventas');
+  const validas = ventas.filter(v=>v.estado==='venta');
+
+  // KPIs
+  const mesActual = new Date().toISOString().slice(0,7);
+  const ventasMes = validas.filter(v=>(v.fecha||'').slice(0,7)===mesActual);
+  const totalMes = ventasMes.reduce((a,v)=>a+num(v.monto),0);
+  const ticketProm = ventasMes.length? totalMes/ventasMes.length : 0;
+  const bySaborCantKPI = {};
+  validas.forEach(v=>{ bySaborCantKPI[v.sabor]=(bySaborCantKPI[v.sabor]||0)+num(v.cantidad); });
+  const topSabor = Object.entries(bySaborCantKPI).sort((a,b)=>b[1]-a[1])[0];
+  const pendientes = ventas.filter(v=>v.estado==='venta' && !v.pagado).length;
+  document.getElementById('kpiRow').innerHTML = `
+    <div class="kpi"><p class="lbl">Ventas este mes</p><p class="val">${money(totalMes)}</p></div>
+    <div class="kpi"><p class="lbl">Ticket promedio</p><p class="val">${money(ticketProm)}</p></div>
+    <div class="kpi"><p class="lbl">Sabor top</p><p class="val" style="font-size:1rem">${topSabor?topSabor[0]:'—'}</p></div>
+    <div class="kpi"><p class="lbl">Ventas por cobrar</p><p class="val">${pendientes}</p></div>`;
+
+  // Tendencia mensual
+  const byMonth = {};
+  validas.forEach(v=>{ const k=(v.fecha||'').slice(0,7); if(!k)return; byMonth[k]=(byMonth[k]||0)+num(v.monto); });
+  const monthKeys = Object.keys(byMonth).sort();
+  new Chart(document.getElementById('chTrend'), {type:'line', data:{labels:monthKeys, datasets:[{label:'Ventas $', data:monthKeys.map(k=>byMonth[k]), borderColor:PALETTE[0], backgroundColor:'rgba(201,146,47,.18)', fill:true, tension:.35, pointBackgroundColor:PALETTE[1], pointRadius:4}]}, options:{plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, grid:{color:'rgba(234,217,180,.4)'}}, x:{grid:{display:false}}}}});
+
+  // Sabores más vendidos
+  const flavorKeys = Object.keys(bySaborCantKPI).sort((a,b)=>bySaborCantKPI[b]-bySaborCantKPI[a]).slice(0,8);
+  new Chart(document.getElementById('chFlavor'), {type:'bar', data:{labels:flavorKeys, datasets:[{label:'Unidades', data:flavorKeys.map(k=>bySaborCantKPI[k]), backgroundColor:PALETTE, borderRadius:6}]}, options:{plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, grid:{color:'rgba(234,217,180,.4)'}}, x:{grid:{display:false}}}}});
+
+  // Velocidad de venta
+  const speed = {};
+  Object.keys(bySaborCantKPI).forEach(s=>{
+    const fechas = validas.filter(v=>v.sabor===s).map(v=>new Date(v.fecha)).filter(d=>!isNaN(d));
+    if(!fechas.length) return;
+    const min = new Date(Math.min(...fechas));
+    const weeks = Math.max(1,(Date.now()-min)/(7*86400000));
+    speed[s] = bySaborCantKPI[s]/weeks;
+  });
+  const speedKeys = Object.keys(speed).sort((a,b)=>speed[b]-speed[a]).slice(0,8);
+  new Chart(document.getElementById('chSpeed'), {type:'bar', data:{labels:speedKeys, datasets:[{label:'Unid/semana', data:speedKeys.map(k=>speed[k].toFixed(1)), backgroundColor:PALETTE[1], borderRadius:6}]}, options:{indexAxis:'y', plugins:{legend:{display:false}}, scales:{x:{beginAtZero:true, grid:{color:'rgba(234,217,180,.4)'}}, y:{grid:{display:false}}}}});
+
+  // % por estilo ultimo mes
+  const hace30 = Date.now()-30*86400000;
+  const ultimoMes = validas.filter(v=>new Date(v.fecha).getTime()>=hace30);
+  const byTipo = {};
+  ultimoMes.forEach(v=>{ byTipo[v.tipo]=(byTipo[v.tipo]||0)+num(v.monto); });
+  new Chart(document.getElementById('chStyle'), {type:'doughnut', data:{labels:Object.keys(byTipo), datasets:[{data:Object.values(byTipo), backgroundColor:PALETTE, borderColor:'var(--card-bg)', borderWidth:2}]}, options:{cutout:'62%', plugins:{legend:{position:'bottom'}}}});
+
+  // Semanas sin cerrar
+  const byWeek = {};
+  validas.forEach(v=>{
+    const wk = isoWeekKey(v.fecha||Date.now());
+    byWeek[wk] = byWeek[wk] || {bruto:0, asignado:0, abierta:false};
+    byWeek[wk].bruto += num(v.monto);
+    if(v.pagado) byWeek[wk].asignado += num(v.monto); else byWeek[wk].abierta = true;
+  });
+  const openWeeks = Object.keys(byWeek).filter(k=>byWeek[k].abierta).sort();
+  new Chart(document.getElementById('chWeeks'), {type:'bar', data:{labels:openWeeks, datasets:[
+    {label:'Pronosticado bruto', data:openWeeks.map(k=>byWeek[k].bruto), backgroundColor:PALETTE[0], borderRadius:5},
+    {label:'Asignado (pagado)', data:openWeeks.map(k=>byWeek[k].asignado), backgroundColor:PALETTE[1], borderRadius:5},
+  ]}, options:{plugins:{legend:{position:'bottom'}}, scales:{y:{beginAtZero:true, grid:{color:'rgba(234,217,180,.4)'}}, x:{grid:{display:false}}}}});
+};
+
+// ---- INSUMOS Y PRECIOS ----
+RENDERERS.insumos = async function(){
+  $view.innerHTML = `<h2 class="text-lg font-bold mb-3">Insumos y precios</h2>
+    <div class="flex gap-2 mb-3">
+      <button class="tab-btn active px-3 py-1.5 text-sm rounded-lg card" data-t="insumos">Insumos</button>
+      <button class="tab-btn px-3 py-1.5 text-sm rounded-lg card" data-t="sabores">Sabores / precios</button>
+      <button class="tab-btn px-3 py-1.5 text-sm rounded-lg card" data-t="fijos">Costos fijos</button>
+    </div>
+    <div id="insSub"></div>`;
+  $view.querySelectorAll('.tab-btn').forEach(b=>b.onclick=()=>{
+    $view.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); subInsumos[b.dataset.t]();
+  });
+  const subInsumos = { insumos: renderSubInsumos, sabores: renderSubSabores, fijos: renderSubFijos };
+  renderSubInsumos();
+
+  async function renderSubInsumos(){
+    const insumos = await colGet('insumos');
+    document.getElementById('insSub').innerHTML = `
+      <div class="card p-3 mb-3">
+        <p class="text-sm font-semibold mb-2">Agregar insumo</p>
+        <div class="grid grid-cols-2 sm:grid-cols-6 gap-2 text-sm">
+          <input id="i_nombre" placeholder="Nombre">
+          <input id="i_donde" placeholder="Dónde se compra">
+          <input id="i_pres" placeholder="Presentación (ej. bolsa 1kg)">
+          <input id="i_costo" type="number" placeholder="Costo $">
+          <input id="i_cant" type="number" placeholder="Cant. (num.)">
+          <select id="i_unidad"><option value="g">gramos</option><option value="kg">kg</option><option value="ml">ml</option><option value="l">litros</option><option value="pza">pieza</option></select>
+        </div>
+        <button class="btn-primary px-3 py-1.5 text-sm mt-2" onclick="addInsumo()">Agregar</button>
+      </div>
+      <div class="card p-3 scrollx"><table>
+        <thead><tr><th>Nombre</th><th>Dónde</th><th>Presentación</th><th>Costo/unid. estándar</th><th></th></tr></thead>
+        <tbody>${insumos.map(i=>{
+          const est = costoEstandarInsumo(i);
+          return `<tr><td>${i.nombre}</td><td>${i.dondeCompra||''}</td><td>${i.presentacion||''} (${i.cantidadPresentacion} ${i.unidad})</td>
+          <td>${money(est.valor)} / ${est.base}</td>
+          <td><button class="text-xs" style="color:var(--danger)" onclick="delInsumo('${i.id}')">eliminar</button></td></tr>`;
+        }).join('') || '<tr><td colspan="5" class="text-xs" style="color:var(--text-soft)">Sin insumos aún.</td></tr>'}</tbody></table></div>`;
+  }
+  window.addInsumo = async ()=>{
+    const nombre=document.getElementById('i_nombre').value.trim(); if(!nombre){ alert('Escribe el nombre del insumo.'); return; }
+    try{
+      await docSet('insumos', uid(), {
+        nombre, dondeCompra: document.getElementById('i_donde').value,
+        presentacion: document.getElementById('i_pres').value,
+        costo: num(document.getElementById('i_costo').value),
+        cantidadPresentacion: num(document.getElementById('i_cant').value),
+        unidad: document.getElementById('i_unidad').value, existencia: 0,
+      });
+      renderSubInsumos();
+    }catch(e){}
+  };
+  window.delInsumo = async(id)=>{ try{ await docDelete('insumos', id); renderSubInsumos(); }catch(e){} };
+
+  async function renderSubSabores(){
+    const [sabores, insumos] = await Promise.all([colGet('sabores'), colGet('insumos')]);
+    const insumosMap = Object.fromEntries(insumos.map(i=>[i.id,i]));
+    document.getElementById('insSub').innerHTML = `
+      <div class="card p-3 mb-3 flex gap-2 items-end flex-wrap">
+        <input id="s_nombre" placeholder="Nombre del sabor" class="text-sm">
+        <button class="btn-primary px-3 py-1.5 text-sm" onclick="addSabor()">Agregar sabor</button>
+      </div>
+      <div class="space-y-3">${sabores.map(s=>{
+        const costo = costoProduccionSabor(s, insumosMap);
+        const recomendado = costo*1.4;
+        const margen = s.precioReal ? ((num(s.precioReal)-costo)/num(s.precioReal)*100) : null;
+        return `<div class="card p-3">
+          <div class="flex justify-between items-center cursor-pointer" onclick="toggleSabor('${s.id}')">
+            <p class="font-semibold">${s.nombre}</p>
+            <p class="text-xs" style="color:var(--text-soft)">Costo ${money(costo)} · Recom. ${money(recomendado)} · Real ${s.precioReal?money(s.precioReal):'—'} · Margen ${margen!==null?margen.toFixed(0)+'%':'—'}</p>
+          </div>
+          <div id="det_${s.id}" class="hidden mt-3 space-y-2">
+            <div class="scrollx"><table><thead><tr><th>Insumo</th><th>Cantidad</th><th>Costo</th><th></th></tr></thead>
+            <tbody>${(s.insumosUsados||[]).map((u,idx)=>{
+              const ins=insumosMap[u.insumoId];
+              return `<tr><td>${ins?ins.nombre:'?'}</td><td>${u.cantidad} ${ins?ins.unidad:''}</td><td>${ins?money(costoUnitarioInsumo(ins)*u.cantidad):'—'}</td>
+              <td><button class="text-xs" style="color:var(--danger)" onclick="rmInsumoSabor('${s.id}',${idx})">quitar</button></td></tr>`;
+            }).join('')}</tbody></table></div>
+            <div class="flex gap-2 flex-wrap items-end text-sm">
+              <select id="add_ins_${s.id}">${insumos.map(i=>`<option value="${i.id}">${i.nombre}</option>`).join('')}</select>
+              <input id="add_cant_${s.id}" type="number" placeholder="Cantidad" style="width:100px">
+              <button class="btn-soft px-2 py-1 text-xs" onclick="addInsumoSabor('${s.id}')">Agregar insumo</button>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm mt-2">
+              <label class="text-xs">Mano de obra<input type="number" value="${s.manoObra||0}" onchange="updSabor('${s.id}','manoObra',this.value)"></label>
+              <label class="text-xs">Empaque<input type="number" value="${s.empaque||0}" onchange="updSabor('${s.id}','empaque',this.value)"></label>
+              <label class="text-xs">Precio real<input type="number" value="${s.precioReal||''}" onchange="updSabor('${s.id}','precioReal',this.value)"></label>
+              <button class="text-xs self-end" style="color:var(--danger)" onclick="delSabor('${s.id}')">eliminar sabor</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('') || '<p class="text-sm" style="color:var(--text-soft)">Aún no agregas sabores.</p>'}</div>`;
+  }
+  window.toggleSabor = id => document.getElementById('det_'+id).classList.toggle('hidden');
+  window.addSabor = async()=>{
+    const n=document.getElementById('s_nombre').value.trim(); if(!n){ alert('Escribe el nombre del sabor.'); return; }
+    try{ await docSet('sabores', uid(), {nombre:n, insumosUsados:[], manoObra:0, empaque:0, precioReal:0}); renderSubSabores(); }catch(e){}
+  };
+  window.delSabor = async(id)=>{ try{ await docDelete('sabores', id); renderSubSabores(); }catch(e){} };
+  window.addInsumoSabor = async(sid)=>{
+    const insId = document.getElementById('add_ins_'+sid).value;
+    const cant = num(document.getElementById('add_cant_'+sid).value);
+    if(!cant){ alert('Indica una cantidad.'); return; }
+    const sabores = await colGet('sabores'); const s = sabores.find(x=>x.id===sid);
+    const list = s.insumosUsados||[]; list.push({insumoId:insId, cantidad:cant});
+    try{ await docSet('sabores', sid, {...s, insumosUsados:list}); renderSubSabores(); }catch(e){}
+  };
+  window.rmInsumoSabor = async(sid, idx)=>{
+    const sabores = await colGet('sabores'); const s = sabores.find(x=>x.id===sid);
+    const list = (s.insumosUsados||[]).filter((_,i)=>i!==idx);
+    try{ await docSet('sabores', sid, {...s, insumosUsados:list}); renderSubSabores(); }catch(e){}
+  };
+  window.updSabor = async(sid, field, val)=>{
+    const sabores = await colGet('sabores'); const s = sabores.find(x=>x.id===sid);
+    try{ await docSet('sabores', sid, {...s, [field]: field==='precioReal'||field==='manoObra'||field==='empaque'? num(val): val}); renderSubSabores(); }catch(e){}
+  };
+
+  async function renderSubFijos(){
+    const fijosArr = await colGet('config');
+    const fijos = fijosArr.find(f=>f.id==='costosFijos') || {manoObraHora:0, gas:0, depreciacion:0};
+    document.getElementById('insSub').innerHTML = `<div class="card p-3 grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+      <label>Mano de obra / hora<input id="f_mano" type="number" value="${fijos.manoObraHora||0}"></label>
+      <label>Gas (mensual)<input id="f_gas" type="number" value="${fijos.gas||0}"></label>
+      <label>Depreciación (mensual)<input id="f_dep" type="number" value="${fijos.depreciacion||0}"></label>
+      <button class="btn-primary px-3 py-1.5 col-span-2 sm:col-span-3" onclick="saveFijos()">Guardar</button>
+    </div>`;
+  }
+  window.saveFijos = async()=>{
+    try{
+      await docSet('config','costosFijos', {manoObraHora:num(document.getElementById('f_mano').value), gas:num(document.getElementById('f_gas').value), depreciacion:num(document.getElementById('f_dep').value)});
+      renderSubFijos();
+    }catch(e){}
+  };
+};
+
+// ---- VENTAS ----
+RENDERERS.ventas = async function(){
+  const [sabores] = await Promise.all([colGet('sabores')]);
+  $view.innerHTML = `<h2 class="text-lg font-bold mb-3">Ventas</h2>
+    <div class="card p-3 mb-3 grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
+      <input id="v_fecha" type="date" value="${new Date().toISOString().slice(0,10)}">
+      <input id="v_cliente" placeholder="Nombre comprador">
+      <select id="v_tipo"><option value="puntoVenta">Punto de venta</option><option value="vendedor">Vendedor externo</option><option value="personal">Venta personal</option><option value="pedido">Sobre pedido</option></select>
+      <select id="v_estado"><option value="venta">Venta</option><option value="pendiente">Pendiente</option><option value="merma">Merma</option></select>
+      <select id="v_pago"><option value="transferencia">Transferencia</option><option value="efectivo">Efectivo</option></select>
+      <select id="v_sabor">${sabores.map(s=>`<option value="${s.nombre}">${s.nombre}</option>`).join('')}</select>
+      <input id="v_cant" type="number" placeholder="Cantidad">
+      <input id="v_monto" type="number" placeholder="Monto $">
+      <input id="v_com" placeholder="Comentario" class="sm:col-span-3">
+      <button class="btn-primary" onclick="addVenta()">Agregar</button>
+    </div>
+    <div id="ventasList" class="card p-3 scrollx"></div>`;
+  await renderVentasList();
+
+  async function renderVentasList(){
+    const ventas = (await colGet('ventas')).sort((a,b)=> (b.fecha||'').localeCompare(a.fecha||''));
+    document.getElementById('ventasList').innerHTML = `<table>
+      <thead><tr><th>Fecha</th><th>Cliente</th><th>Tipo</th><th>Estado</th><th>Pago</th><th>Sabor</th><th>Cant.</th><th>Monto</th><th>Coment.</th><th></th></tr></thead>
+      <tbody>${ventas.map(v=>`<tr class="${v.pagado?'pagado-row':''}">
+        <td>${v.fecha||''}</td><td>${v.cliente||''}</td><td>${v.tipo||''}</td><td>${v.estado||''}</td><td>${v.metodoPago||''}</td><td>${v.sabor||''}</td><td>${v.cantidad||0}</td><td>${money(v.monto)}</td><td>${v.comentario||''}</td>
+        <td class="whitespace-nowrap">
+          ${v.pagado ? `<button class="text-xs" onclick="editarVenta('${v.id}')">editar</button>` : `<button class="text-xs btn-soft px-2 py-1" onclick="marcarPagado('${v.id}')">Pagado</button>`}
+        </td></tr>`).join('') || '<tr><td colspan="10" class="text-xs" style="color:var(--text-soft)">Sin ventas registradas.</td></tr>'}</tbody></table>`;
+  }
+  window.addVenta = async()=>{
+    try{
+      await docSet('ventas', uid(), {
+        fecha: document.getElementById('v_fecha').value, cliente: document.getElementById('v_cliente').value,
+        tipo: document.getElementById('v_tipo').value, estado: document.getElementById('v_estado').value,
+        metodoPago: document.getElementById('v_pago').value, sabor: document.getElementById('v_sabor').value,
+        cantidad: num(document.getElementById('v_cant').value), monto: num(document.getElementById('v_monto').value),
+        comentario: document.getElementById('v_com').value, pagado:false,
+      });
+      renderVentasList();
+    }catch(e){}
+  };
+  window.marcarPagado = async(id)=>{
+    const ventas = await colGet('ventas'); const v = ventas.find(x=>x.id===id);
+    try{ await docSet('ventas', id, {...v, pagado:true}); renderVentasList(); }catch(e){}
+  };
+  window.editarVenta = async(id)=>{
+    if(!confirm('¿Seguro que quieres editar esta venta ya cerrada?')) return;
+    const ventas = await colGet('ventas'); const v = ventas.find(x=>x.id===id);
+    try{ await docSet('ventas', id, {...v, pagado:false}); renderVentasList(); }catch(e){}
+  };
+};
+
+// ---- SIMULACIÓN (matriz) ----
+let simCols = []; let simRows = [];
+RENDERERS.simulacion = async function(){
+  const [sabores, clientes] = await Promise.all([colGet('sabores'), colGet('clientes')]);
+  simCols = simCols.length? simCols : [];
+  $view.innerHTML = `<h2 class="text-lg font-bold mb-3">Simulación de producción</h2>
+    <div class="flex gap-2 mb-3 flex-wrap items-end text-sm">
+      <select id="sim_addcol">${sabores.map(s=>`<option value="${s.nombre}">${s.nombre}</option>`).join('')}</select>
+      <button class="btn-soft px-2 py-1" onclick="simAddCol()">+ Sabor</button>
+      <select id="sim_addrow">${clientes.map(c=>`<option value="${c.nombre}">${c.nombre}</option>`).join('')}</select>
+      <button class="btn-soft px-2 py-1" onclick="simAddRow()">+ Cliente / destino</button>
+      <input id="sim_semana" type="date" value="${new Date().toISOString().slice(0,10)}">
+      <button class="btn-primary px-3 py-1.5" onclick="simGuardar()">Guardar producción de la semana</button>
+    </div>
+    <div id="simTable" class="card p-3 scrollx"></div>`;
+  renderSimTable();
+};
+window.simAddCol = ()=>{ const v=document.getElementById('sim_addcol').value; if(v && !simCols.includes(v)) simCols.push(v); renderSimTable(); };
+window.simAddRow = ()=>{ const v=document.getElementById('sim_addrow').value; if(v && !simRows.includes(v)) simRows.push(v); renderSimTable(); };
+async function renderSimTable(){
+  const sabores = await colGet('sabores'); const insumos = await colGet('insumos');
+  const insumosMap = Object.fromEntries(insumos.map(i=>[i.id,i]));
+  const saboresMap = Object.fromEntries(sabores.map(s=>[s.nombre,s]));
+  document.getElementById('simTable').innerHTML = `<table>
+    <thead><tr><th>Cliente \\ Sabor</th>${simCols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
+    <tbody>${simRows.map(r=>`<tr><td>${r}</td>${simCols.map(c=>`<td><input type="number" style="width:70px" id="cell_${r}_${c}" onchange="simRecalc()"></td>`).join('')}</tr>`).join('') || `<tr><td class="text-xs" style="color:var(--text-soft)">Agrega sabores y clientes para empezar la matriz.</td></tr>`}</tbody>
+  </table>
+  <div class="mt-2 text-xs" style="color:var(--text-soft)">${simCols.map(c=>{
+    const s = saboresMap[c]; const costo = s? costoProduccionSabor(s, insumosMap):0;
+    return `${c}: costo unitario ${money(costo)}`;
+  }).join(' · ')}</div>`;
+}
+window.simRecalc = ()=>{};
+window.simGuardar = async()=>{
+  const items = [];
+  simRows.forEach(r=> simCols.forEach(c=>{
+    const el = document.getElementById(`cell_${r}_${c}`);
+    const cant = el? num(el.value):0;
+    if(cant>0) items.push({sabor:c, cliente:r, cantidad:cant});
+  }));
+  if(!items.length){ alert('Agrega cantidades a la matriz primero.'); return; }
+  const semana = document.getElementById('sim_semana').value;
+  const id = uid();
+  try{
+    await docSet('producciones', id, {semana, items});
+    const [sabores, insumos] = await Promise.all([colGet('sabores'), colGet('insumos')]);
+    const saboresMap = Object.fromEntries(sabores.map(s=>[s.nombre,s]));
+    const insumosMap = Object.fromEntries(insumos.map(i=>[i.id,i]));
+    const consumo = {};
+    items.forEach(it=>{
+      const s = saboresMap[it.sabor]; if(!s) return;
+      (s.insumosUsados||[]).forEach(u=>{ consumo[u.insumoId]=(consumo[u.insumoId]||0)+u.cantidad*it.cantidad; });
+    });
+    for(const [insId, cant] of Object.entries(consumo)){
+      const ins = insumosMap[insId]; if(!ins) continue;
+      await docSet('insumos', insId, {...ins, existencia: Math.max(0,num(ins.existencia)-cant)});
+    }
+    simCols=[]; simRows=[];
+    alert('Producción guardada.');
+    window.go('producciones');
+  }catch(e){}
+};
+
+// ---- PRODUCCIONES ----
+RENDERERS.producciones = async function(){
+  const producciones = (await colGet('producciones')).sort((a,b)=>(b.semana||'').localeCompare(a.semana||''));
+  $view.innerHTML = `<h2 class="text-lg font-bold mb-3">Producciones por semana</h2>
+    <div class="space-y-3">${producciones.map(p=>{
+      const tot = {}; p.items.forEach(it=> tot[it.sabor]=(tot[it.sabor]||0)+it.cantidad);
+      return `<div class="card p-3">
+        <p class="font-semibold text-sm mb-1">Semana ${p.semana}</p>
+        <div class="scrollx"><table><thead><tr><th>Cliente</th><th>Sabor</th><th>Cantidad</th></tr></thead>
+        <tbody>${p.items.map(it=>`<tr><td>${it.cliente}</td><td>${it.sabor}</td><td>${it.cantidad}</td></tr>`).join('')}</tbody></table></div>
+        <p class="text-xs mt-1" style="color:var(--text-soft)">Total: ${Object.entries(tot).map(([k,v])=>`${k}: ${v}`).join(' · ')}</p>
+      </div>`;
+    }).join('') || '<p class="text-sm" style="color:var(--text-soft)">Aún no hay producciones guardadas.</p>'}</div>`;
+};
+
+// ---- EQUIPO ----
+RENDERERS.equipo = async function(){
+  $view.innerHTML = `<h2 class="text-lg font-bold mb-3">Equipo</h2>
+    <div class="flex gap-2 mb-3">
+      <button class="tab-btn active px-3 py-1.5 text-sm rounded-lg card" data-t="cocineros">Cocineros</button>
+      <button class="tab-btn px-3 py-1.5 text-sm rounded-lg card" data-t="vendedores">Vendedores</button>
+      <button class="tab-btn px-3 py-1.5 text-sm rounded-lg card" data-t="marketing">Marketing</button>
+    </div>
+    <div id="eqSub"></div>`;
+  const sub = {cocineros: renderCocineros, vendedores: renderVendedores, marketing: renderMarketing};
+  $view.querySelectorAll('.tab-btn').forEach(b=>b.onclick=()=>{ $view.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); sub[b.dataset.t](); });
+  renderCocineros();
+
+  async function renderCocineros(){
+    const cocineros = await colGet('cocineros');
+    document.getElementById('eqSub').innerHTML = `
+      <div class="card p-3 mb-3 flex gap-2"><input id="c_nombre" placeholder="Nombre cocinero" class="text-sm"><button class="btn-primary px-3 py-1.5 text-sm" onclick="addCocinero()">Agregar</button></div>
+      <div class="space-y-3">${cocineros.map(c=>`<div class="card p-3">
+        <p class="font-semibold text-sm">${c.nombre}</p>
+        <div class="scrollx mt-1"><table><thead><tr><th>Fecha</th><th>Monto</th><th>Nota</th></tr></thead>
+        <tbody>${(c.pagos||[]).map(p=>`<tr><td>${p.fecha}</td><td>${money(p.monto)}</td><td>${p.nota||''}</td></tr>`).join('')}</tbody></table></div>
+        <div class="flex gap-2 mt-2 text-sm flex-wrap">
+          <input type="date" id="cp_fecha_${c.id}" value="${new Date().toISOString().slice(0,10)}">
+          <input type="number" id="cp_monto_${c.id}" placeholder="Monto">
+          <input id="cp_nota_${c.id}" placeholder="Nota">
+          <button class="btn-soft px-2 py-1 text-xs" onclick="addPagoCocinero('${c.id}')">Registrar pago</button>
+        </div></div>`).join('') || '<p class="text-sm" style="color:var(--text-soft)">Sin cocineros registrados.</p>'}</div>`;
+  }
+  window.addCocinero = async()=>{ const n=document.getElementById('c_nombre').value.trim(); if(!n){alert('Escribe un nombre.');return;} try{ await docSet('cocineros', uid(), {nombre:n, pagos:[]}); renderCocineros(); }catch(e){} };
+  window.addPagoCocinero = async(id)=>{
+    const cocineros = await colGet('cocineros'); const c = cocineros.find(x=>x.id===id);
+    const pagos = c.pagos||[]; pagos.push({fecha:document.getElementById('cp_fecha_'+id).value, monto:num(document.getElementById('cp_monto_'+id).value), nota:document.getElementById('cp_nota_'+id).value});
+    try{ await docSet('cocineros', id, {...c, pagos}); renderCocineros(); }catch(e){}
+  };
+
+  async function renderVendedores(){
+    const [vendedores, sabores] = await Promise.all([colGet('vendedores'), colGet('sabores')]);
+    document.getElementById('eqSub').innerHTML = `
+      <div class="card p-3 mb-3 flex gap-2"><input id="ve_nombre" placeholder="Nombre vendedor" class="text-sm"><button class="btn-primary px-3 py-1.5 text-sm" onclick="addVendedor()">Agregar</button></div>
+      <div class="space-y-3">${vendedores.map(v=>`<div class="card p-3">
+        <p class="font-semibold text-sm">${v.nombre}</p>
+        <p class="text-xs mt-1 font-medium" style="color:var(--text-soft)">Entregas (sabores dados)</p>
+        <div class="scrollx"><table><thead><tr><th>Fecha</th><th>Sabor</th><th>Docenas</th></tr></thead>
+        <tbody>${(v.entregas||[]).map(e=>`<tr><td>${e.fecha}</td><td>${e.sabor}</td><td>${e.docenas}</td></tr>`).join('')}</tbody></table></div>
+        <div class="flex gap-2 mt-2 text-sm flex-wrap">
+          <input type="date" id="ve_fecha_${v.id}" value="${new Date().toISOString().slice(0,10)}">
+          <select id="ve_sabor_${v.id}">${sabores.map(s=>`<option value="${s.nombre}">${s.nombre}</option>`).join('')}</select>
+          <input type="number" id="ve_doc_${v.id}" placeholder="Docenas">
+          <button class="btn-soft px-2 py-1 text-xs" onclick="addEntregaVendedor('${v.id}')">Registrar entrega</button>
+        </div>
+        <p class="text-xs mt-2 font-medium" style="color:var(--text-soft)">Pagos</p>
+        <div class="scrollx"><table><thead><tr><th>Fecha</th><th>Monto</th></tr></thead>
+        <tbody>${(v.pagos||[]).map(p=>`<tr><td>${p.fecha}</td><td>${money(p.monto)}</td></tr>`).join('')}</tbody></table></div>
+        <div class="flex gap-2 mt-2 text-sm">
+          <input type="date" id="vp_fecha_${v.id}" value="${new Date().toISOString().slice(0,10)}">
+          <input type="number" id="vp_monto_${v.id}" placeholder="Monto">
+          <button class="btn-soft px-2 py-1 text-xs" onclick="addPagoVendedor('${v.id}')">Registrar pago</button>
+        </div></div>`).join('') || '<p class="text-sm" style="color:var(--text-soft)">Sin vendedores registrados.</p>'}</div>`;
+  }
+  window.addVendedor = async()=>{ const n=document.getElementById('ve_nombre').value.trim(); if(!n){alert('Escribe un nombre.');return;} try{ await docSet('vendedores', uid(), {nombre:n, entregas:[], pagos:[]}); renderVendedores(); }catch(e){} };
+  window.addEntregaVendedor = async(id)=>{
+    const vendedores = await colGet('vendedores'); const v = vendedores.find(x=>x.id===id);
+    const entregas = v.entregas||[]; entregas.push({fecha:document.getElementById('ve_fecha_'+id).value, sabor:document.getElementById('ve_sabor_'+id).value, docenas:num(document.getElementById('ve_doc_'+id).value)});
+    try{ await docSet('vendedores', id, {...v, entregas}); renderVendedores(); }catch(e){}
+  };
+  window.addPagoVendedor = async(id)=>{
+    const vendedores = await colGet('vendedores'); const v = vendedores.find(x=>x.id===id);
+    const pagos = v.pagos||[]; pagos.push({fecha:document.getElementById('vp_fecha_'+id).value, monto:num(document.getElementById('vp_monto_'+id).value)});
+    try{ await docSet('vendedores', id, {...v, pagos}); renderVendedores(); }catch(e){}
+  };
+
+  function renderMarketing(){
+    document.getElementById('eqSub').innerHTML = `<div class="card p-3 text-sm" style="color:var(--text-soft)">Sección de marketing — pendiente de definir.</div>`;
+  }
+};
+
+// ---- INVENTARIO ----
+RENDERERS.inventario = async function(){
+  const [insumos, producciones] = await Promise.all([colGet('insumos'), colGet('producciones')]);
+  const sabores = await colGet('sabores');
+  const saboresMap = Object.fromEntries(sabores.map(s=>[s.nombre,s]));
+  const semanas = new Set(); const consumoTotal = {};
+  producciones.forEach(p=>{ semanas.add(p.semana); p.items.forEach(it=>{
+    const s = saboresMap[it.sabor]; if(!s) return;
+    (s.insumosUsados||[]).forEach(u=>{ consumoTotal[u.insumoId]=(consumoTotal[u.insumoId]||0)+u.cantidad*it.cantidad; });
+  });});
+  const nSemanas = Math.max(1, semanas.size);
+  $view.innerHTML = `<h2 class="text-lg font-bold mb-3">Inventario</h2>
+    <div class="card p-3 scrollx"><table>
+      <thead><tr><th>Insumo</th><th>Existencia</th><th>Consumo prom./semana</th><th>Safety stock (25%)</th><th>Recomendado comprar</th><th>Estado</th></tr></thead>
+      <tbody>${insumos.map(i=>{
+        const consProm = (consumoTotal[i.id]||0)/nSemanas;
+        const safety = consProm*0.25;
+        const recomendado = Math.max(0, consProm - num(i.existencia));
+        const bajo = num(i.existencia) < safety;
+        return `<tr ${bajo?'style="background:rgba(192,57,43,.12)"':''}>
+          <td>${i.nombre}</td>
+          <td><input type="number" value="${i.existencia||0}" style="width:80px" onchange="updExistencia('${i.id}',this.value)"></td>
+          <td>${consProm.toFixed(1)} ${i.unidad}</td>
+          <td>${safety.toFixed(1)} ${i.unidad}</td>
+          <td>${recomendado.toFixed(1)} ${i.unidad}</td>
+          <td>${bajo?'<span style="color:var(--danger);font-weight:600">Comprar ya</span>':'<span style="color:var(--ok)">OK</span>'}</td>
+        </tr>`;
+      }).join('') || '<tr><td colspan="6" class="text-xs" style="color:var(--text-soft)">Agrega insumos primero.</td></tr>'}</tbody></table></div>`;
+};
+window.updExistencia = async(id, val)=>{
+  const insumos = await colGet('insumos'); const ins = insumos.find(x=>x.id===id);
+  try{ await docSet('insumos', id, {...ins, existencia:num(val)}); }catch(e){}
+};
+
+// ---- CLIENTES ----
+RENDERERS.clientes = async function(){
+  const clientes = await colGet('clientes');
+  $view.innerHTML = `<h2 class="text-lg font-bold mb-3">Clientes / puntos de venta</h2>
+    <div class="card p-3 mb-3 grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
+      <input id="cl_nombre" placeholder="Nombre">
+      <select id="cl_tipo"><option value="puntoVenta">Punto de venta</option><option value="vendedor">Vendedor</option><option value="cliente">Cliente</option></select>
+      <input id="cl_contacto" placeholder="Contacto">
+      <button class="btn-primary" onclick="addCliente()">Agregar</button>
+    </div>
+    <div class="card p-3 scrollx"><table><thead><tr><th>Nombre</th><th>Tipo</th><th>Contacto</th><th></th></tr></thead>
+    <tbody>${clientes.map(c=>`<tr><td>${c.nombre}</td><td>${c.tipo}</td><td>${c.contacto||''}</td>
+    <td><button class="text-xs" style="color:var(--danger)" onclick="delCliente('${c.id}')">eliminar</button></td></tr>`).join('') || '<tr><td colspan="4" class="text-xs" style="color:var(--text-soft)">Sin clientes registrados.</td></tr>'}</tbody></table></div>`;
+};
+window.addCliente = async()=>{
+  const n = document.getElementById('cl_nombre').value.trim(); if(!n){alert('Escribe un nombre.');return;}
+  try{
+    await docSet('clientes', uid(), {nombre:n, tipo:document.getElementById('cl_tipo').value, contacto:document.getElementById('cl_contacto').value});
+    window.go('clientes');
+  }catch(e){}
+};
+window.delCliente = async(id)=>{ try{ await docDelete('clientes', id); window.go('clientes'); }catch(e){} };
+
+// Arranque: el hub se pinta al final, cuando todo lo demás ya está definido
+renderHome();
+</script>
+</body>
+</html>
