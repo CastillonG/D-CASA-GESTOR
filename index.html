@@ -152,6 +152,9 @@ let USER_EMAIL = '';
 
 // Lista inicial de insumos (de tu hoja de cálculo)
 const INSUMOS_INICIALES = [{"nombre": "Huevos", "cantidadPresentacion": 30.0, "costo": 110.0, "existencia": 23.0, "dondeCompra": "Abarrey", "unidad": "pza", "link": "https://despensa.bodegaaurrera.com.mx/p/huevo-blanco-aurrera-fresco-30-pzas-00750179164714"}, {"nombre": "Harina de trigo Los Gallos", "cantidadPresentacion": 2000.0, "costo": 30.0, "existencia": 10615.5, "dondeCompra": "Bodega ahorrera", "unidad": "g", "link": "https://www.cityclub.com.mx/harina-de-trigo-los-gallos-1-kilo-bolsa/451570.html"}, {"nombre": "Azucar Estandar", "cantidadPresentacion": 2000.0, "costo": 44.0, "existencia": 13490.3, "dondeCompra": "Bodega ahorrera", "unidad": "g", "link": "https://ibarramayoreo.com/azucar-estandar-zulka-1-kg"}, {"nombre": "Aceite Puro de Soya", "cantidadPresentacion": 800.0, "costo": 28.0, "existencia": -3305.0, "dondeCompra": "Abarrey", "unidad": "ml", "link": "https://despensa.bodegaaurrera.com.mx/p/aceite-comestible-aurrera-puro-de-soya-800-ml-00750649501087"}, {"nombre": "Polvo para Hornear Royal", "cantidadPresentacion": 454.0, "costo": 60.0, "existencia": 393.0, "dondeCompra": "Dulceria luisito", "unidad": "g", "link": "https://www.soriana.com/polvo-para-hornear-rexal-250-g/250239.html"}, {"nombre": "Mantequilla", "cantidadPresentacion": 1080.0, "costo": 286.0, "existencia": 1080.0, "dondeCompra": "City Club", "unidad": "g", "link": "https://www.cityclub.com.mx/mantequilla-sin-sal-gloria-12-90-gr/3006643.html"}, {"nombre": "Azucar Mascabada", "cantidadPresentacion": 2000.0, "costo": 67.0, "existencia": 4851.0, "dondeCompra": "City club", "unidad": "g", "link": "https://www.cityclub.com.mx/azucar-mascabado-zulka-2-kg/3119331.html"}, {"nombre": "Cocoa Alcalina", "cantidadPresentacion": 1000.0, "costo": 340.0, "existencia": 1347.0, "dondeCompra": "Materias primas", "unidad": "g", "link": "https://g.co/kgs/SCZD5DT"}, {"nombre": "Margarina", "cantidadPresentacion": 2027.0, "costo": 155.0, "existencia": 1348.0, "dondeCompra": "City CLub", "unidad": "g", "link": "https://www.cityclub.com.mx/margarina-light-members-choice-2.2-kg/3019058.html"}, {"nombre": "Chispas de Chocolate Cafe", "cantidadPresentacion": 1000.0, "costo": 160.0, "existencia": 1519.0, "dondeCompra": "Rizzali", "unidad": "g", "link": "https://maps.app.goo.gl/TJXjxpEnqj8ytMBY6"}, {"nombre": "Bolsas de Celofan Chicas", "cantidadPresentacion": 100.0, "costo": 23.0, "existencia": -498.0, "dondeCompra": "Zazueta", "unidad": "pza", "link": "https://maps.app.goo.gl/xJMR4uLtNveiiQhm7"}, {"nombre": "Bolsas de Celofan Grande", "cantidadPresentacion": 100.0, "costo": 23.0, "existencia": 175.0, "dondeCompra": "Zazueta", "unidad": "pza", "link": "https://maps.app.goo.gl/xJMR4uLtNveiiQhm7"}, {"nombre": "Etiqueta", "cantidadPresentacion": 48.0, "costo": 16.0, "existencia": 132.0, "dondeCompra": "C.V. Express", "unidad": "pza", "link": "https://maps.app.goo.gl/4ccktvSsN69F8NCy9"}, {"nombre": "Vainilla", "cantidadPresentacion": 1000.0, "costo": 70.0, "existencia": 991.0, "dondeCompra": "Waldos", "unidad": "ml", "link": "https://www.walmart.com.mx/ip/despensa/abarrotes/bebidas/vainilla-bakersfield-de-1-litro-caja-de-12-piezas/01750226493040?athbdg=L6000&selectedSellerId=1&from=/search"}, {"nombre": "Limon", "cantidadPresentacion": 1000.0, "costo": 57.0, "existencia": -3.0, "dondeCompra": "Abarrey", "unidad": "g", "link": "https://www.abarrey.com/lista.php"}, {"nombre": "Oreo", "cantidadPresentacion": 27.0, "costo": 42.0, "existencia": -192.0, "dondeCompra": "Oxxo", "unidad": "pza", "link": "https://www.mercadolibre.com.mx/galleta-oreo-en-charola-de-308g/p/MLM17774692"}, {"nombre": "Ferrero", "cantidadPresentacion": 16.0, "costo": 89.0, "existencia": 41.0, "dondeCompra": "Sams/City club", "unidad": "pza", "link": "https://www.cityclub.com.mx/esfera-de-galleta-rellena-members-choice-200-g/11735536.html"}, {"nombre": "Azucar Glas", "cantidadPresentacion": 5000.0, "costo": 170.0, "existencia": 0.0, "dondeCompra": "La cañita", "unidad": "g", "link": ""}, {"nombre": "Zanahoria", "cantidadPresentacion": 1000.0, "costo": 18.5, "existencia": 0.0, "dondeCompra": "Abarrey", "unidad": "g", "link": ""}, {"nombre": "Nuez", "cantidadPresentacion": 250.0, "costo": 75.0, "existencia": 0.0, "dondeCompra": "Waldos", "unidad": "g", "link": ""}, {"nombre": "Mazapan", "cantidadPresentacion": 60.0, "costo": 103.9, "existencia": -1.0, "dondeCompra": "Soriana", "unidad": "pza", "link": ""}, {"nombre": "Mantequilla de Mani", "cantidadPresentacion": 510.0, "costo": 67.0, "existencia": -50.0, "dondeCompra": "Walmart", "unidad": "g", "link": ""}, {"nombre": "Queso crema", "cantidadPresentacion": 1300.0, "costo": 169.0, "existencia": 825.0, "dondeCompra": "City Club", "unidad": "g", "link": ""}, {"nombre": "Crema batida", "cantidadPresentacion": 907.0, "costo": 73.0, "existencia": -120.0, "dondeCompra": "Zazueta", "unidad": "g", "link": ""}, {"nombre": "M&M", "cantidadPresentacion": 302.0, "costo": 123.0, "existencia": 4163.0, "dondeCompra": "Zazueta", "unidad": "g", "link": "https://www.mercadolibre.com.mx/frasco-chocolate-luneta-mms-17kg-importado-granel/p/MLM19923406#wid%3DMLM2065533447%26sid%3Dsearch%26searchVariation%3DMLM19923406%26position%3D2%26search_layout%3Dstack%26type%3Dproduct%26tracking_id%3Dcc4cbcb7-d24a-445d-95f6-56d8233ec296"}, {"nombre": "Ojos decoración", "cantidadPresentacion": 1757.0, "costo": 470.0, "existencia": 0.0, "dondeCompra": "Bodega ahorrera", "unidad": "pza", "link": ""}, {"nombre": "Reeses", "cantidadPresentacion": 15.0, "costo": 160.0, "existencia": 0.0, "dondeCompra": "Bodega ahorrera", "unidad": "pza", "link": "https://www.mercadolibre.com.mx/reeses-halloween-mix-mantequilla-de-mani-y-chocolate-255-g/p/MLM27391367#wid%3DMLM1963119599%26sid%3Dsearch%26searchVariation%3DMLM27391367%26position%3D5%26search_layout%3Dstack%26type%3Dproduct%26tracking_id%3Dc510bd46-0a8b-406c-9f2e-aadbd2bd40ca"}, {"nombre": "Galletas maria", "cantidadPresentacion": 510.0, "costo": 61.7, "existencia": 0.0, "dondeCompra": "Zazueta", "unidad": "g", "link": "https://comercialzazueta.com/products/marias-gamesa-510-g"}, {"nombre": "Bombon Bianchi", "cantidadPresentacion": 400.0, "costo": 44.0, "existencia": 0.0, "dondeCompra": "Zazuta", "unidad": "g", "link": "https://comercialzazueta.com/products/malvavisco-bianchi-chico-de-la-rosa-400-g-1"}, {"nombre": "Kinder Bueno", "cantidadPresentacion": 20.0, "costo": 80.0, "existencia": 0.0, "dondeCompra": "Walmart", "unidad": "pza", "link": ""}, {"nombre": "Pretzel", "cantidadPresentacion": 1000.0, "costo": 100.0, "existencia": 1.0, "dondeCompra": "City Club", "unidad": "g", "link": ""}, {"nombre": "Chocolate kiss", "cantidadPresentacion": 314.0, "costo": 97.0, "existencia": 990.0, "dondeCompra": "City CLub", "unidad": "g", "link": ""}, {"nombre": "Chisppas kirkland", "cantidadPresentacion": 2040.0, "costo": 789.0, "existencia": 0.0, "dondeCompra": "", "unidad": "g", "link": ""}, {"nombre": "Chispas Hersheys", "cantidadPresentacion": 300.0, "costo": 103.0, "existencia": 0.0, "dondeCompra": "", "unidad": "g", "link": ""}, {"nombre": "Mantequilla Costco", "cantidadPresentacion": 453.0, "costo": 93.0, "existencia": 0.0, "dondeCompra": "", "unidad": "g", "link": ""}, {"nombre": "Manteca cristal", "cantidadPresentacion": 1000.0, "costo": 48.0, "existencia": 0.0, "dondeCompra": "", "unidad": "g", "link": ""}, {"nombre": "Chispas costco", "cantidadPresentacion": 2500.0, "costo": 667.0, "existencia": 0.0, "dondeCompra": "", "unidad": "g", "link": ""}, {"nombre": "Mantequilla city club", "cantidadPresentacion": 1000.0, "costo": 245.0, "existencia": 0.0, "dondeCompra": "", "unidad": "g", "link": ""}, {"nombre": "Bolsa de papel del 10", "cantidadPresentacion": 100.0, "costo": 45.0, "existencia": 0.0, "dondeCompra": "", "unidad": "pza", "link": ""}, {"nombre": "Kiss 883", "cantidadPresentacion": 210.0, "costo": 207.83, "existencia": 0.0, "dondeCompra": "", "unidad": "pza", "link": ""}, {"nombre": "Agua", "cantidadPresentacion": 3785.0, "costo": 17.0, "existencia": 0.0, "dondeCompra": "", "unidad": "ml", "link": ""}, {"nombre": "Caja blanca 18x13", "cantidadPresentacion": 10.0, "costo": 57.0, "existencia": 0.0, "dondeCompra": "", "unidad": "pza", "link": ""}, {"nombre": "Chocolate Nuveen", "cantidadPresentacion": 500.0, "costo": 76.9, "existencia": 0.0, "dondeCompra": "Zazueta", "unidad": "g", "link": ""}, {"nombre": "Baking soda", "cantidadPresentacion": 227.0, "costo": 23.0, "existencia": 0.0, "dondeCompra": "", "unidad": "g", "link": ""}, {"nombre": "Canela", "cantidadPresentacion": 55.0, "costo": 24.0, "existencia": 0.0, "dondeCompra": "", "unidad": "g", "link": ""}, {"nombre": "Nestle chocolate chunk", "cantidadPresentacion": 311.0, "costo": 80.0, "existencia": 0.0, "dondeCompra": "", "unidad": "g", "link": ""}];
+
+// Recetas iniciales (por tanda; 'rinde' = piezas por tanda)
+const RECETAS_INICIALES = [{"nombre": "Brownie Clasico", "tipo": "normal", "rinde": 12, "items": [{"insumo": "Huevos", "cantidad": 3}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 175}, {"insumo": "Azucar Estandar", "cantidad": 150}, {"insumo": "Mantequilla", "cantidad": 150}, {"insumo": "Aceite Puro de Soya", "cantidad": 50}, {"insumo": "Polvo para Hornear Royal", "cantidad": 10}, {"insumo": "Azucar Mascabada", "cantidad": 200}, {"insumo": "Cocoa Alcalina", "cantidad": 50}, {"insumo": "Chispas de Chocolate Cafe", "cantidad": 30}, {"insumo": "Vainilla", "cantidad": 15}]}, {"nombre": "Brownie Oreo", "tipo": "normal", "rinde": 12, "items": [{"insumo": "Huevos", "cantidad": 3}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 175}, {"insumo": "Azucar Estandar", "cantidad": 150}, {"insumo": "Mantequilla", "cantidad": 150}, {"insumo": "Aceite Puro de Soya", "cantidad": 50}, {"insumo": "Polvo para Hornear Royal", "cantidad": 10}, {"insumo": "Azucar Mascabada", "cantidad": 200}, {"insumo": "Cocoa Alcalina", "cantidad": 50}, {"insumo": "Chispas de Chocolate Cafe", "cantidad": 30}, {"insumo": "Vainilla", "cantidad": 15}, {"insumo": "Oreo", "cantidad": 12}]}, {"nombre": "Brownie Ferrero", "tipo": "normal", "rinde": 12, "items": [{"insumo": "Huevos", "cantidad": 3}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 175}, {"insumo": "Azucar Estandar", "cantidad": 150}, {"insumo": "Mantequilla", "cantidad": 150}, {"insumo": "Aceite Puro de Soya", "cantidad": 50}, {"insumo": "Polvo para Hornear Royal", "cantidad": 10}, {"insumo": "Azucar Mascabada", "cantidad": 200}, {"insumo": "Cocoa Alcalina", "cantidad": 50}, {"insumo": "Chispas de Chocolate Cafe", "cantidad": 30}, {"insumo": "Vainilla", "cantidad": 15}, {"insumo": "Ferrero", "cantidad": 6}]}, {"nombre": "Brownie M&M", "tipo": "normal", "rinde": 12, "items": [{"insumo": "Huevos", "cantidad": 3}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 175}, {"insumo": "Azucar Estandar", "cantidad": 150}, {"insumo": "Mantequilla", "cantidad": 150}, {"insumo": "Aceite Puro de Soya", "cantidad": 50}, {"insumo": "Polvo para Hornear Royal", "cantidad": 10}, {"insumo": "Azucar Mascabada", "cantidad": 200}, {"insumo": "Cocoa Alcalina", "cantidad": 50}, {"insumo": "Chispas de Chocolate Cafe", "cantidad": 30}, {"insumo": "Vainilla", "cantidad": 15}, {"insumo": "M&M", "cantidad": 6}]}, {"nombre": "Brownie Reeses", "tipo": "normal", "rinde": 12, "items": [{"insumo": "Huevos", "cantidad": 3}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 175}, {"insumo": "Azucar Estandar", "cantidad": 150}, {"insumo": "Mantequilla", "cantidad": 150}, {"insumo": "Aceite Puro de Soya", "cantidad": 50}, {"insumo": "Polvo para Hornear Royal", "cantidad": 10}, {"insumo": "Azucar Mascabada", "cantidad": 200}, {"insumo": "Cocoa Alcalina", "cantidad": 50}, {"insumo": "Chispas de Chocolate Cafe", "cantidad": 30}, {"insumo": "Vainilla", "cantidad": 15}, {"insumo": "Reeses", "cantidad": 6}]}, {"nombre": "Brookie", "tipo": "normal", "rinde": 12, "items": [{"insumo": "Huevos", "cantidad": 4}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 325}, {"insumo": "Azucar Estandar", "cantidad": 185}, {"insumo": "Mantequilla", "cantidad": 150}, {"insumo": "Aceite Puro de Soya", "cantidad": 50}, {"insumo": "Polvo para Hornear Royal", "cantidad": 20}, {"insumo": "Azucar Mascabada", "cantidad": 275}, {"insumo": "Cocoa Alcalina", "cantidad": 50}, {"insumo": "Chispas de Chocolate Cafe", "cantidad": 40}, {"insumo": "Vainilla", "cantidad": 15}, {"insumo": "Margarina", "cantidad": 90}]}, {"nombre": "Brownie Cookie", "tipo": "normal", "rinde": 13, "items": [{"insumo": "Huevos", "cantidad": 2}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 120}, {"insumo": "Azucar Estandar", "cantidad": 64}, {"insumo": "Mantequilla city club", "cantidad": 85}, {"insumo": "Chispas Hersheys", "cantidad": 85}, {"insumo": "Aceite Puro de Soya", "cantidad": 20}, {"insumo": "Azucar Mascabada", "cantidad": 144}, {"insumo": "Cocoa Alcalina", "cantidad": 52}, {"insumo": "Chispas de Chocolate Cafe", "cantidad": 85}, {"insumo": "Vainilla", "cantidad": 15}, {"insumo": "Aceite Puro de Soya", "cantidad": 12}]}, {"nombre": "Cheescake Brownie", "tipo": "normal", "rinde": 12, "items": [{"insumo": "Huevos", "cantidad": 4}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 175}, {"insumo": "Azucar Estandar", "cantidad": 195}, {"insumo": "Mantequilla", "cantidad": 150}, {"insumo": "Aceite Puro de Soya", "cantidad": 50}, {"insumo": "Polvo para Hornear Royal", "cantidad": 10}, {"insumo": "Azucar Mascabada", "cantidad": 200}, {"insumo": "Cocoa Alcalina", "cantidad": 50}, {"insumo": "Chispas de Chocolate Cafe", "cantidad": 30}, {"insumo": "Vainilla", "cantidad": 30}, {"insumo": "Queso crema", "cantidad": 380}]}, {"nombre": "Heart Brownie", "tipo": "normal", "rinde": 12, "items": [{"insumo": "Huevos", "cantidad": 1}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 58}, {"insumo": "Azucar Estandar", "cantidad": 50}, {"insumo": "Mantequilla", "cantidad": 50}, {"insumo": "Aceite Puro de Soya", "cantidad": 7}, {"insumo": "Polvo para Hornear Royal", "cantidad": 3}, {"insumo": "Azucar Mascabada", "cantidad": 65}, {"insumo": "Cocoa Alcalina", "cantidad": 17}, {"insumo": "Chispas de Chocolate Cafe", "cantidad": 10}, {"insumo": "Vainilla", "cantidad": 5}]}, {"nombre": "Galleta", "tipo": "normal", "rinde": 10, "items": [{"insumo": "Huevos", "cantidad": 1}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 165}, {"insumo": "Azucar Estandar", "cantidad": 72}, {"insumo": "Mantequilla Costco", "cantidad": 112}, {"insumo": "Chispas Hersheys", "cantidad": 55}, {"insumo": "Polvo para Hornear Royal", "cantidad": 3}, {"insumo": "Azucar Mascabada", "cantidad": 96}, {"insumo": "Vainilla", "cantidad": 5}]}, {"nombre": "Brownie Smoars", "tipo": "normal", "rinde": 12, "items": [{"insumo": "Huevos", "cantidad": 3}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 175}, {"insumo": "Azucar Estandar", "cantidad": 150}, {"insumo": "Mantequilla", "cantidad": 150}, {"insumo": "Aceite Puro de Soya", "cantidad": 50}, {"insumo": "Polvo para Hornear Royal", "cantidad": 10}, {"insumo": "Azucar Mascabada", "cantidad": 200}, {"insumo": "Cocoa Alcalina", "cantidad": 50}, {"insumo": "Chocolate Nuveen", "cantidad": 65}, {"insumo": "Vainilla", "cantidad": 15}, {"insumo": "Bombon Bianchi", "cantidad": 31}, {"insumo": "Galletas maria", "cantidad": 46}]}, {"nombre": "Carrot Sandwich", "tipo": "normal", "rinde": 12, "items": [{"insumo": "Huevos", "cantidad": 2}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 280}, {"insumo": "Azucar Estandar", "cantidad": 60}, {"insumo": "Mantequilla", "cantidad": 170}, {"insumo": "Canela", "cantidad": 4}, {"insumo": "Polvo para Hornear Royal", "cantidad": 4}, {"insumo": "Azucar Mascabada", "cantidad": 180}, {"insumo": "Baking soda", "cantidad": 3}, {"insumo": "Zanahoria", "cantidad": 100}, {"insumo": "Vainilla", "cantidad": 10}, {"insumo": "Queso crema", "cantidad": 106}, {"insumo": "Azucar Glas", "cantidad": 120}, {"insumo": "Polvo para Hornear Royal", "cantidad": 4}]}, {"nombre": "Brownie Grande", "tipo": "normal", "rinde": 6, "items": [{"insumo": "Huevos", "cantidad": 3}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 175}, {"insumo": "Azucar Estandar", "cantidad": 150}, {"insumo": "Mantequilla", "cantidad": 150}, {"insumo": "Aceite Puro de Soya", "cantidad": 50}, {"insumo": "Polvo para Hornear Royal", "cantidad": 10}, {"insumo": "Azucar Mascabada", "cantidad": 200}, {"insumo": "Cocoa Alcalina", "cantidad": 50}, {"insumo": "Chispas de Chocolate Cafe", "cantidad": 30}, {"insumo": "Vainilla", "cantidad": 15}]}, {"nombre": "Chocolate Chip Cookie", "tipo": "normal", "rinde": 15, "items": [{"insumo": "Huevos", "cantidad": 2}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 280}, {"insumo": "Azucar Estandar", "cantidad": 60}, {"insumo": "Mantequilla", "cantidad": 170}, {"insumo": "Polvo para Hornear Royal", "cantidad": 4}, {"insumo": "Azucar Mascabada", "cantidad": 180}, {"insumo": "Baking soda", "cantidad": 3}, {"insumo": "Nestle chocolate chunk", "cantidad": 150}, {"insumo": "Vainilla", "cantidad": 10}]}, {"nombre": "Brownie de Muerto", "tipo": "normal", "rinde": 12, "items": [{"insumo": "Huevos", "cantidad": 4}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 440}, {"insumo": "Azucar Estandar", "cantidad": 167}, {"insumo": "Mantequilla", "cantidad": 200}, {"insumo": "Polvo para Hornear Royal", "cantidad": 13}, {"insumo": "Azucar Mascabada", "cantidad": 237}, {"insumo": "Vainilla", "cantidad": 15}]}, {"nombre": "Brownie Relleno de Mazapan", "tipo": "normal", "rinde": 12, "items": [{"insumo": "Huevos", "cantidad": 3}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 175}, {"insumo": "Azucar Estandar", "cantidad": 150}, {"insumo": "Mantequilla", "cantidad": 150}, {"insumo": "Aceite Puro de Soya", "cantidad": 50}, {"insumo": "Polvo para Hornear Royal", "cantidad": 10}, {"insumo": "Azucar Mascabada", "cantidad": 200}, {"insumo": "Cocoa Alcalina", "cantidad": 50}, {"insumo": "Chispas de Chocolate Cafe", "cantidad": 30}, {"insumo": "Vainilla", "cantidad": 15}, {"insumo": "Margarina", "cantidad": 90}, {"insumo": "Mazapan", "cantidad": 1}, {"insumo": "Mantequilla de Mani", "cantidad": 50}, {"insumo": "Queso crema", "cantidad": 95}, {"insumo": "Crema batida", "cantidad": 120}]}, {"nombre": "Brownie Kinder Bueno", "tipo": "normal", "rinde": 12, "items": [{"insumo": "Huevos", "cantidad": 3}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 175}, {"insumo": "Azucar Estandar", "cantidad": 150}, {"insumo": "Mantequilla", "cantidad": 150}, {"insumo": "Aceite Puro de Soya", "cantidad": 50}, {"insumo": "Polvo para Hornear Royal", "cantidad": 10}, {"insumo": "Azucar Mascabada", "cantidad": 200}, {"insumo": "Cocoa Alcalina", "cantidad": 50}, {"insumo": "Chispas de Chocolate Cafe", "cantidad": 30}, {"insumo": "Vainilla", "cantidad": 15}, {"insumo": "Kinder Bueno", "cantidad": 12}]}, {"nombre": "Brownie Sin Lactosa", "tipo": "deslactosado", "rinde": 12, "items": [{"insumo": "Huevos", "cantidad": 4}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 175}, {"insumo": "Azucar Estandar", "cantidad": 150}, {"insumo": "Aceite Puro de Soya", "cantidad": 165}, {"insumo": "Agua", "cantidad": 40}, {"insumo": "Polvo para Hornear Royal", "cantidad": 10}, {"insumo": "Azucar Mascabada", "cantidad": 220}, {"insumo": "Cocoa Alcalina", "cantidad": 50}, {"insumo": "Chispas de Chocolate Cafe", "cantidad": 30}, {"insumo": "Vainilla", "cantidad": 20}]}, {"nombre": "Brownie Oreo Sin Lactosa", "tipo": "deslactosado", "rinde": 12, "items": [{"insumo": "Huevos", "cantidad": 4}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 175}, {"insumo": "Azucar Estandar", "cantidad": 150}, {"insumo": "Agua", "cantidad": 40}, {"insumo": "Aceite Puro de Soya", "cantidad": 160}, {"insumo": "Polvo para Hornear Royal", "cantidad": 10}, {"insumo": "Azucar Mascabada", "cantidad": 220}, {"insumo": "Cocoa Alcalina", "cantidad": 50}, {"insumo": "Chispas de Chocolate Cafe", "cantidad": 30}, {"insumo": "Vainilla", "cantidad": 15}, {"insumo": "Oreo", "cantidad": 12}]}, {"nombre": "Brownie Ferrero Sin Lactosa", "tipo": "deslactosado", "rinde": 12, "items": [{"insumo": "Huevos", "cantidad": 4}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 175}, {"insumo": "Azucar Estandar", "cantidad": 150}, {"insumo": "Agua", "cantidad": 40}, {"insumo": "Aceite Puro de Soya", "cantidad": 160}, {"insumo": "Polvo para Hornear Royal", "cantidad": 10}, {"insumo": "Azucar Mascabada", "cantidad": 220}, {"insumo": "Cocoa Alcalina", "cantidad": 50}, {"insumo": "Chispas de Chocolate Cafe", "cantidad": 30}, {"insumo": "Vainilla", "cantidad": 15}, {"insumo": "Ferrero", "cantidad": 12}]}, {"nombre": "Brownie M&M Sin Lactosa", "tipo": "deslactosado", "rinde": 12, "items": [{"insumo": "Huevos", "cantidad": 4}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 175}, {"insumo": "Azucar Estandar", "cantidad": 150}, {"insumo": "Agua", "cantidad": 40}, {"insumo": "Aceite Puro de Soya", "cantidad": 160}, {"insumo": "Polvo para Hornear Royal", "cantidad": 10}, {"insumo": "Azucar Mascabada", "cantidad": 220}, {"insumo": "Cocoa Alcalina", "cantidad": 50}, {"insumo": "Chispas de Chocolate Cafe", "cantidad": 30}, {"insumo": "Vainilla", "cantidad": 15}, {"insumo": "M&M", "cantidad": 54}]}, {"nombre": "Brownie Reeses Sin Lactosa", "tipo": "deslactosado", "rinde": 12, "items": [{"insumo": "Huevos", "cantidad": 4}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 175}, {"insumo": "Azucar Estandar", "cantidad": 150}, {"insumo": "Agua", "cantidad": 40}, {"insumo": "Aceite Puro de Soya", "cantidad": 160}, {"insumo": "Polvo para Hornear Royal", "cantidad": 10}, {"insumo": "Azucar Mascabada", "cantidad": 220}, {"insumo": "Cocoa Alcalina", "cantidad": 50}, {"insumo": "Chispas de Chocolate Cafe", "cantidad": 30}, {"insumo": "Vainilla", "cantidad": 15}, {"insumo": "Reeses", "cantidad": 6}]}, {"nombre": "Brookie Sin Lactosa", "tipo": "deslactosado", "rinde": 12, "items": [{"insumo": "Huevos", "cantidad": 5}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 325}, {"insumo": "Azucar Estandar", "cantidad": 185}, {"insumo": "Agua", "cantidad": 40}, {"insumo": "Aceite Puro de Soya", "cantidad": 160}, {"insumo": "Polvo para Hornear Royal", "cantidad": 20}, {"insumo": "Azucar Mascabada", "cantidad": 295}, {"insumo": "Cocoa Alcalina", "cantidad": 50}, {"insumo": "Chispas de Chocolate Cafe", "cantidad": 40}, {"insumo": "Vainilla", "cantidad": 15}, {"insumo": "Margarina", "cantidad": 90}]}, {"nombre": "Brownie de Limon", "tipo": "deslactosado", "rinde": 12, "items": [{"insumo": "Huevos", "cantidad": 2}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 250}, {"insumo": "Azucar Estandar", "cantidad": 225}, {"insumo": "Limon", "cantidad": 3}, {"insumo": "Aceite Puro de Soya", "cantidad": 125}, {"insumo": "Polvo para Hornear Royal", "cantidad": 10}, {"insumo": "Azucar Glas", "cantidad": 150}, {"insumo": "Vainilla", "cantidad": 15}]}, {"nombre": "Brownie de Zanahoria", "tipo": "deslactosado", "rinde": 12, "items": [{"insumo": "Huevos", "cantidad": 2}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 225}, {"insumo": "Azucar Estandar", "cantidad": 200}, {"insumo": "Zanahoria", "cantidad": 150}, {"insumo": "Aceite Puro de Soya", "cantidad": 175}, {"insumo": "Polvo para Hornear Royal", "cantidad": 10}, {"insumo": "Vainilla", "cantidad": 15}, {"insumo": "Nuez", "cantidad": 50}, {"insumo": "Manteca cristal", "cantidad": 50}, {"insumo": "Queso crema", "cantidad": 60}, {"insumo": "Azucar Glas", "cantidad": 170}]}, {"nombre": "Brownie de Mazapan", "tipo": "deslactosado", "rinde": 12, "items": [{"insumo": "Huevos", "cantidad": 2}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 250}, {"insumo": "Azucar Estandar", "cantidad": 200}, {"insumo": "Mazapan", "cantidad": 1}, {"insumo": "Aceite Puro de Soya", "cantidad": 125}, {"insumo": "Polvo para Hornear Royal", "cantidad": 10}, {"insumo": "Vainilla", "cantidad": 15}, {"insumo": "Mazapan", "cantidad": 1}, {"insumo": "Mantequilla de Mani", "cantidad": 50}, {"insumo": "Queso crema", "cantidad": 95}, {"insumo": "Crema batida", "cantidad": 120}]}, {"nombre": "Brownie Kiss Sin Lactosa", "tipo": "deslactosado", "rinde": 12, "items": [{"insumo": "Huevos", "cantidad": 4}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 175}, {"insumo": "Azucar Estandar", "cantidad": 150}, {"insumo": "Agua", "cantidad": 40}, {"insumo": "Aceite Puro de Soya", "cantidad": 160}, {"insumo": "Polvo para Hornear Royal", "cantidad": 10}, {"insumo": "Azucar Mascabada", "cantidad": 220}, {"insumo": "Cocoa Alcalina", "cantidad": 50}, {"insumo": "Chispas de Chocolate Cafe", "cantidad": 30}, {"insumo": "Vainilla", "cantidad": 15}, {"insumo": "Kiss 883", "cantidad": 18}]}, {"nombre": "Brownie Smoars Sin Lactosa", "tipo": "deslactosado", "rinde": 12, "items": [{"insumo": "Huevos", "cantidad": 4}, {"insumo": "Harina de trigo Los Gallos", "cantidad": 175}, {"insumo": "Azucar Estandar", "cantidad": 150}, {"insumo": "Agua", "cantidad": 40}, {"insumo": "Aceite Puro de Soya", "cantidad": 160}, {"insumo": "Polvo para Hornear Royal", "cantidad": 10}, {"insumo": "Azucar Mascabada", "cantidad": 220}, {"insumo": "Cocoa Alcalina", "cantidad": 50}, {"insumo": "Chocolate Nuveen", "cantidad": 50}, {"insumo": "Vainilla", "cantidad": 15}, {"insumo": "Bombon Bianchi", "cantidad": 31}, {"insumo": "Galletas maria", "cantidad": 20}]}];
 const $home = document.getElementById('home');
 const $view = document.getElementById('view');
 const $status = document.getElementById('status');
@@ -184,7 +187,7 @@ function inventarioBajo(insumos, producciones, sabores){
   const semanas = new Set(); const total = {};
   producciones.forEach(p=>{ semanas.add(p.semana); (p.items||[]).forEach(it=>{
     const s = saboresMap[it.sabor]; if(!s) return;
-    (s.insumosUsados||[]).forEach(u=>{ total[u.insumoId]=(total[u.insumoId]||0)+u.cantidad*it.cantidad; });
+    (s.insumosUsados||[]).forEach(u=>{ total[u.insumoId]=(total[u.insumoId]||0)+u.cantidad/(num(s.rinde)||1)*it.cantidad; });
   });});
   const n = Math.max(1, semanas.size);
   return insumos.filter(i=> num(i.existencia) < ((total[i.id]||0)/n)*0.25 );
@@ -402,13 +405,13 @@ function costoEstandarInsumo(ins){
   return { valor: num(ins.costo)*factor, base };
 }
 function costoProduccionSabor(sabor, insumosMap){
-  let costo = 0;
+  // Las cantidades de insumos son por tanda; 'rinde' = piezas por tanda. Resultado: costo por pieza.
+  let lote = 0;
   (sabor.insumosUsados||[]).forEach(u=>{
     const ins = insumosMap[u.insumoId];
-    if(ins) costo += costoUnitarioInsumo(ins) * num(u.cantidad);
+    if(ins) lote += costoUnitarioInsumo(ins) * num(u.cantidad);
   });
-  costo += num(sabor.manoObra) + num(sabor.empaque);
-  return costo;
+  return lote/(num(sabor.rinde)||1) + num(sabor.manoObra) + num(sabor.empaque);
 }
 
 // ---------- chart defaults (brand palette, legible in light/dark) ----------
@@ -575,11 +578,16 @@ RENDERERS.insumos = async function(){
     $view.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
     b.classList.add('active'); subInsumos[b.dataset.t]();
   });
+  let editInsumoId = null;
+  let insumosCache = [];
+  const saboresAbiertos = new Set();
   const subInsumos = { insumos: renderSubInsumos, sabores: renderSubSabores, fijos: renderSubFijos };
   renderSubInsumos();
 
   async function renderSubInsumos(){
-    const insumos = await colGet('insumos');
+    editInsumoId = null;
+    const insumos = (await colGet('insumos')).sort((a,b)=>String(a.nombre||'').localeCompare(String(b.nombre||''),'es'));
+    insumosCache = insumos;
     const nombresExistentes = new Set(insumos.map(i=>String(i.nombre||'').trim().toLowerCase()));
     const faltantes = INSUMOS_INICIALES.filter(x=>!nombresExistentes.has(x.nombre.toLowerCase())).length;
     document.getElementById('insSub').innerHTML = `
@@ -587,41 +595,71 @@ RENDERERS.insumos = async function(){
         <p class="text-sm">Tu lista inicial tiene <b>${faltantes}</b> insumos por cargar.</p>
         <button class="btn-primary" onclick="cargarInsumosIniciales()">Cargar lista</button>
       </div>` : ''}
-      <div class="card p-3 mb-3">
-        <p class="text-sm font-semibold mb-2">Agregar insumo</p>
-        <div class="grid grid-cols-2 sm:grid-cols-6 gap-2 text-sm">
+      <div class="card p-3 mb-3" id="insForm">
+        <p class="text-sm font-semibold mb-2" id="insFormTitle">Agregar insumo</p>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
           <input id="i_nombre" placeholder="Nombre">
           <input id="i_donde" placeholder="Dónde se compra">
           <input id="i_pres" placeholder="Presentación (ej. bolsa 1kg)">
-          <input id="i_costo" type="number" placeholder="Costo $">
-          <input id="i_cant" type="number" placeholder="Cant. (num.)">
+          <input id="i_link" placeholder="Link (opcional)">
+          <input id="i_costo" type="number" step="any" placeholder="Costo $">
+          <input id="i_cant" type="number" step="any" placeholder="Cant. (num.)">
           <select id="i_unidad"><option value="g">gramos</option><option value="kg">kg</option><option value="ml">ml</option><option value="l">litros</option><option value="pza">pieza</option></select>
         </div>
-        <button class="btn-primary px-3 py-1.5 text-sm mt-2" onclick="addInsumo()">Agregar</button>
+        <div class="flex gap-2 mt-2">
+          <button class="btn-primary px-3 py-1.5 text-sm" id="i_btn" onclick="addInsumo()">Agregar</button>
+          <button class="btn-soft px-3 py-1.5 text-sm hidden" id="i_cancel" onclick="cancelEditInsumo()">Cancelar</button>
+        </div>
       </div>
       <div class="card p-3 scrollx"><table>
         <thead><tr><th>Nombre</th><th>Dónde</th><th>Presentación</th><th>Costo/unid. estándar</th><th></th></tr></thead>
         <tbody>${insumos.map(i=>{
           const est = costoEstandarInsumo(i);
           const nombreHtml = i.link ? `<a href="${esc(i.link)}" target="_blank" rel="noopener" style="text-decoration:underline;text-decoration-color:var(--border-c)">${esc(i.nombre)}</a>` : esc(i.nombre);
-          return `<tr><td>${nombreHtml}</td><td>${esc(i.dondeCompra||'')}</td><td>${i.presentacion||''} (${i.cantidadPresentacion} ${i.unidad})</td>
+          return `<tr><td>${nombreHtml}</td><td>${esc(i.dondeCompra||'')}</td><td>${esc(i.presentacion||'')} (${i.cantidadPresentacion} ${i.unidad})</td>
           <td>${money(est.valor)} / ${est.base}</td>
-          <td><button class="text-xs" style="color:var(--danger)" onclick="delInsumo('${i.id}')">eliminar</button></td></tr>`;
+          <td class="whitespace-nowrap"><button class="text-xs" onclick="editInsumo('${i.id}')">editar</button>
+          <button class="text-xs" style="color:var(--danger);margin-left:.6rem" onclick="delInsumo('${i.id}')">eliminar</button></td></tr>`;
         }).join('') || '<tr><td colspan="5" class="text-xs" style="color:var(--text-soft)">Sin insumos aún.</td></tr>'}</tbody></table></div>`;
   }
   window.addInsumo = async ()=>{
     const nombre=document.getElementById('i_nombre').value.trim(); if(!nombre){ alert('Escribe el nombre del insumo.'); return; }
+    const link = document.getElementById('i_link').value.trim();
+    const campos = {
+      nombre, dondeCompra: document.getElementById('i_donde').value.trim(),
+      presentacion: document.getElementById('i_pres').value.trim(),
+      link: /^https?:\/\//i.test(link) ? link : '',
+      costo: num(document.getElementById('i_costo').value),
+      cantidadPresentacion: num(document.getElementById('i_cant').value),
+      unidad: document.getElementById('i_unidad').value,
+    };
     try{
-      await docSet('insumos', uid(), {
-        nombre, dondeCompra: document.getElementById('i_donde').value,
-        presentacion: document.getElementById('i_pres').value,
-        costo: num(document.getElementById('i_costo').value),
-        cantidadPresentacion: num(document.getElementById('i_cant').value),
-        unidad: document.getElementById('i_unidad').value, existencia: 0,
-      });
+      if(editInsumoId){
+        const anterior = insumosCache.find(x=>x.id===editInsumoId) || {};
+        await docSet('insumos', editInsumoId, {...anterior, ...campos}); // conserva existencia y demás datos
+      } else {
+        await docSet('insumos', uid(), {...campos, existencia: 0});
+      }
       renderSubInsumos();
     }catch(e){}
   };
+  window.editInsumo = (id)=>{
+    const i = insumosCache.find(x=>x.id===id); if(!i) return;
+    editInsumoId = id;
+    document.getElementById('i_nombre').value = i.nombre||'';
+    document.getElementById('i_donde').value = i.dondeCompra||'';
+    document.getElementById('i_pres').value = i.presentacion||'';
+    document.getElementById('i_link').value = i.link||'';
+    document.getElementById('i_costo').value = i.costo||'';
+    document.getElementById('i_cant').value = i.cantidadPresentacion||'';
+    document.getElementById('i_unidad').value = i.unidad||'g';
+    document.getElementById('insFormTitle').textContent = 'Editar insumo: '+(i.nombre||'');
+    document.getElementById('i_btn').textContent = 'Guardar cambios';
+    document.getElementById('i_cancel').classList.remove('hidden');
+    document.getElementById('insForm').scrollIntoView({behavior:'smooth', block:'center'});
+    document.getElementById('i_nombre').focus();
+  };
+  window.cancelEditInsumo = ()=>{ renderSubInsumos(); };
   window.delInsumo = async(id)=>{ try{ await docDelete('insumos', id); renderSubInsumos(); }catch(e){} };
   window.cargarInsumosIniciales = async ()=>{
     const db = await ensureDB();
@@ -642,23 +680,33 @@ RENDERERS.insumos = async function(){
   };
 
   async function renderSubSabores(){
-    const [sabores, insumos] = await Promise.all([colGet('sabores'), colGet('insumos')]);
+    const [saboresRaw, insumos] = await Promise.all([colGet('sabores'), colGet('insumos')]);
+    const sabores = saboresRaw.sort((a,b)=>String(a.nombre||'').localeCompare(String(b.nombre||''),'es'));
     const insumosMap = Object.fromEntries(insumos.map(i=>[i.id,i]));
+    const nombresS = new Set(sabores.map(s=>String(s.nombre||'').trim().toLowerCase()));
+    const recetasFaltantes = RECETAS_INICIALES.filter(r=>!nombresS.has(r.nombre.toLowerCase())).length;
     document.getElementById('insSub').innerHTML = `
+      ${recetasFaltantes>0 ? `<div class="card p-3 mb-3 flex items-center justify-between gap-3 flex-wrap">
+        <p class="text-sm">Tus recetas iniciales (normal y sin lactosa): <b>${recetasFaltantes}</b> por cargar.</p>
+        <button class="btn-primary" onclick="cargarRecetasIniciales()">Cargar recetas</button>
+      </div>` : ''}
       <div class="card p-3 mb-3 flex gap-2 items-end flex-wrap">
         <input id="s_nombre" placeholder="Nombre del sabor" class="text-sm">
         <button class="btn-primary px-3 py-1.5 text-sm" onclick="addSabor()">Agregar sabor</button>
       </div>
       <div class="space-y-3">${sabores.map(s=>{
         const costo = costoProduccionSabor(s, insumosMap);
-        const recomendado = costo*1.4;
+        const recomendado = costo/0.6; // 40% de margen sobre el precio
         const margen = s.precioReal ? ((num(s.precioReal)-costo)/num(s.precioReal)*100) : null;
+        const rinde = num(s.rinde)||1;
+        const costoTanda = (s.insumosUsados||[]).reduce((a,u)=>{ const ins=insumosMap[u.insumoId]; return a + (ins? costoUnitarioInsumo(ins)*num(u.cantidad):0); },0);
         return `<div class="card p-3">
-          <div class="flex justify-between items-center cursor-pointer" onclick="toggleSabor('${s.id}')">
-            <p class="font-semibold">${s.nombre}</p>
-            <p class="text-xs" style="color:var(--text-soft)">Costo ${money(costo)} · Recom. ${money(recomendado)} · Real ${s.precioReal?money(s.precioReal):'—'} · Margen ${margen!==null?margen.toFixed(0)+'%':'—'}</p>
+          <div class="flex justify-between items-center cursor-pointer gap-3 flex-wrap" onclick="toggleSabor('${s.id}')">
+            <p class="font-semibold">${esc(s.nombre)}</p>
+            <p class="text-xs" style="color:var(--text-soft)">Costo ${money(costo)} por pza · Recom. ${money(recomendado)} · Real ${s.precioReal?money(s.precioReal):'—'} · Margen ${margen!==null?margen.toFixed(0)+'%':'—'}</p>
           </div>
-          <div id="det_${s.id}" class="hidden mt-3 space-y-2">
+          <div id="det_${s.id}" class="${saboresAbiertos.has(s.id)?'':'hidden '}mt-3 space-y-2">
+            <p class="text-xs" style="color:var(--text-soft)">Tanda: ${money(costoTanda)} en insumos · rinde ${rinde} pzas</p>
             <div class="scrollx"><table><thead><tr><th>Insumo</th><th>Cantidad</th><th>Costo</th><th></th></tr></thead>
             <tbody>${(s.insumosUsados||[]).map((u,idx)=>{
               const ins=insumosMap[u.insumoId];
@@ -670,20 +718,54 @@ RENDERERS.insumos = async function(){
               <input id="add_cant_${s.id}" type="number" placeholder="Cantidad" style="width:100px">
               <button class="btn-soft px-2 py-1 text-xs" onclick="addInsumoSabor('${s.id}')">Agregar insumo</button>
             </div>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm mt-2">
-              <label class="text-xs">Mano de obra<input type="number" value="${s.manoObra||0}" onchange="updSabor('${s.id}','manoObra',this.value)"></label>
-              <label class="text-xs">Empaque<input type="number" value="${s.empaque||0}" onchange="updSabor('${s.id}','empaque',this.value)"></label>
-              <label class="text-xs">Precio real<input type="number" value="${s.precioReal||''}" onchange="updSabor('${s.id}','precioReal',this.value)"></label>
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 text-sm mt-2">
+              <label class="text-xs">Rinde (pzas por tanda)<input type="number" step="any" value="${s.rinde||1}" onchange="updSabor('${s.id}','rinde',this.value)"></label>
+              <label class="text-xs">Mano de obra (por pza)<input type="number" step="any" value="${s.manoObra||0}" onchange="updSabor('${s.id}','manoObra',this.value)"></label>
+              <label class="text-xs">Empaque (por pza)<input type="number" step="any" value="${s.empaque||0}" onchange="updSabor('${s.id}','empaque',this.value)"></label>
+              <label class="text-xs">Precio real<input type="number" step="any" value="${s.precioReal||''}" onchange="updSabor('${s.id}','precioReal',this.value)"></label>
               <button class="text-xs self-end" style="color:var(--danger)" onclick="delSabor('${s.id}')">eliminar sabor</button>
             </div>
           </div>
         </div>`;
       }).join('') || '<p class="text-sm" style="color:var(--text-soft)">Aún no agregas sabores.</p>'}</div>`;
   }
-  window.toggleSabor = id => document.getElementById('det_'+id).classList.toggle('hidden');
+  window.toggleSabor = id => {
+    const el = document.getElementById('det_'+id); if(!el) return;
+    el.classList.toggle('hidden');
+    if(el.classList.contains('hidden')) saboresAbiertos.delete(id); else saboresAbiertos.add(id);
+  };
   window.addSabor = async()=>{
     const n=document.getElementById('s_nombre').value.trim(); if(!n){ alert('Escribe el nombre del sabor.'); return; }
-    try{ await docSet('sabores', uid(), {nombre:n, insumosUsados:[], manoObra:0, empaque:0, precioReal:0}); renderSubSabores(); }catch(e){}
+    try{ await docSet('sabores', uid(), {nombre:n, insumosUsados:[], manoObra:0, empaque:0, precioReal:0, rinde:1}); renderSubSabores(); }catch(e){}
+  };
+  window.cargarRecetasIniciales = async ()=>{
+    const db = await ensureDB();
+    if(!db){ alert('El almacenamiento aún no está listo. Espera un momento e inténtalo de nuevo.'); return; }
+    const [sabores, insumos] = await Promise.all([colGet('sabores'), colGet('insumos')]);
+    if(!insumos.length){ alert('Primero carga tus insumos (pestaña Insumos → Cargar lista).'); return; }
+    const idPorNombre = {};
+    insumos.forEach(i=>{ idPorNombre[String(i.nombre||'').trim().toLowerCase()] = i.id; });
+    const nombresS = new Set(sabores.map(s=>String(s.nombre||'').trim().toLowerCase()));
+    const nuevas = RECETAS_INICIALES.filter(r=>!nombresS.has(r.nombre.toLowerCase()));
+    const noEncontrados = new Set();
+    const docs = nuevas.map(r=>({
+      nombre:r.nombre, tipo:r.tipo, rinde:r.rinde, manoObra:0, empaque:0, precioReal:0,
+      insumosUsados: r.items.map(it=>{
+        const id = idPorNombre[it.insumo.trim().toLowerCase()];
+        if(!id){ noEncontrados.add(it.insumo); return null; }
+        return {insumoId:id, cantidad:it.cantidad};
+      }).filter(Boolean)
+    }));
+    if(noEncontrados.size){ alert('Faltan estos insumos: '+[...noEncontrados].join(', ')+'. Cárgalos primero y vuelve a intentar.'); return; }
+    showSaving(true);
+    try{
+      await Promise.all(docs.map(d=>db.collection('sabores').doc(uid()).set(d)));
+      alert('Listo: se cargaron '+docs.length+' recetas.');
+    }catch(e){
+      console.error(e);
+      alert('No se pudieron cargar las recetas ('+(e && e.code ? e.code : 'error')+').');
+    }finally{ showSaving(false); }
+    renderSubSabores();
   };
   window.delSabor = async(id)=>{ try{ await docDelete('sabores', id); renderSubSabores(); }catch(e){} };
   window.addInsumoSabor = async(sid)=>{
@@ -701,7 +783,7 @@ RENDERERS.insumos = async function(){
   };
   window.updSabor = async(sid, field, val)=>{
     const sabores = await colGet('sabores'); const s = sabores.find(x=>x.id===sid);
-    try{ await docSet('sabores', sid, {...s, [field]: field==='precioReal'||field==='manoObra'||field==='empaque'? num(val): val}); renderSubSabores(); }catch(e){}
+    try{ await docSet('sabores', sid, {...s, [field]: field==='precioReal'||field==='manoObra'||field==='empaque'||field==='rinde'? num(val): val}); renderSubSabores(); }catch(e){}
   };
 
   async function renderSubFijos(){
@@ -825,7 +907,7 @@ window.simGuardar = async()=>{
     const consumo = {};
     items.forEach(it=>{
       const s = saboresMap[it.sabor]; if(!s) return;
-      (s.insumosUsados||[]).forEach(u=>{ consumo[u.insumoId]=(consumo[u.insumoId]||0)+u.cantidad*it.cantidad; });
+      (s.insumosUsados||[]).forEach(u=>{ consumo[u.insumoId]=(consumo[u.insumoId]||0)+u.cantidad/(num(s.rinde)||1)*it.cantidad; });
     });
     for(const [insId, cant] of Object.entries(consumo)){
       const ins = insumosMap[insId]; if(!ins) continue;
@@ -936,7 +1018,7 @@ RENDERERS.inventario = async function(){
   const semanas = new Set(); const consumoTotal = {};
   producciones.forEach(p=>{ semanas.add(p.semana); p.items.forEach(it=>{
     const s = saboresMap[it.sabor]; if(!s) return;
-    (s.insumosUsados||[]).forEach(u=>{ consumoTotal[u.insumoId]=(consumoTotal[u.insumoId]||0)+u.cantidad*it.cantidad; });
+    (s.insumosUsados||[]).forEach(u=>{ consumoTotal[u.insumoId]=(consumoTotal[u.insumoId]||0)+u.cantidad/(num(s.rinde)||1)*it.cantidad; });
   });});
   const nSemanas = Math.max(1, semanas.size);
   $view.innerHTML = `<h2 class="text-lg font-bold mb-3">Inventario</h2>
