@@ -148,6 +148,7 @@ const MENU = [
 ];
 
 let DB = null;
+let USER_EMAIL = '';
 const $home = document.getElementById('home');
 const $view = document.getElementById('view');
 const $status = document.getElementById('status');
@@ -354,7 +355,13 @@ async function colGet(name){
   try{
     const snap = await db.collection(name).get();
     return snap.docs.map(d=>({id:d.id, ...d.data()}));
-  }catch(e){ console.error(e); return []; }
+  }catch(e){
+    console.error(e);
+    if(e && e.code==='permission-denied'){
+      $status.innerHTML = '<span style="color:var(--danger)">La cuenta '+esc(USER_EMAIL)+' no tiene permiso. Agrega ese correo en las reglas de Firestore y pulsa Publicar.</span>';
+    }
+    return [];
+  }
 }
 async function docSet(col,id,data){
   const db = await ensureDB();
@@ -445,6 +452,7 @@ async function initFirebase(){
       };
     });
   }
+  USER_EMAIL = user.email;
   $status.innerHTML = 'Sesión: '+esc(user.email)+' · guardado en la nube · <button id="logoutBtn" class="text-xs" style="text-decoration:underline">salir</button>';
   document.getElementById('logoutBtn').onclick = async ()=>{ await A.signOut(auth); location.reload(); };
 
@@ -952,6 +960,16 @@ window.delCliente = async(id)=>{ try{ await docDelete('clientes', id); window.go
 
 // Arranque: el hub se pinta al final, cuando todo lo demás ya está definido
 renderHome();
+
+// Mantener el hub al día con lo que registren los demás (sin pisar lo que estás escribiendo)
+function refreshHubIfIdle(){
+  if(document.hidden || !document.getElementById('hubKpis')) return;
+  const a = document.activeElement;
+  if(a && (a.tagName==='INPUT' || a.tagName==='SELECT')) return;
+  refreshHub();
+}
+setInterval(refreshHubIfIdle, 30000);
+document.addEventListener('visibilitychange', refreshHubIfIdle);
 </script>
 </body>
 </html>
