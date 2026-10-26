@@ -2,7 +2,8 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#2e1a0c">
 <title>D'Casa Angel's Bakery · Gestión</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -122,25 +123,141 @@
   .chart-title{ font-size:1rem; font-style:italic; font-weight:500; color:var(--text-main); margin-bottom:.7rem; }
 
   .save-indicator{ position:fixed; bottom:84px; right:14px; background:var(--text-main); color:var(--card-bg); padding:.4rem .8rem; border-radius:.35rem; font-size:.75rem; z-index:50; transition:opacity .2s; }
+
+  /* ================== REDISEÑO HUD ================== */
+  *,*::before,*::after{ box-sizing:border-box; }
+  .hidden{ display:none !important; }
+  :root{ --nav-h:64px; --top-h:58px; --side-w:232px; --radius:14px; --shadow:0 1px 2px rgba(36,18,6,.06),0 4px 14px rgba(36,18,6,.06); }
+  html{ -webkit-tap-highlight-color:transparent; }
+  body{ font-size:15px; }
+  /* Layout */
+  .layout{ min-height:100vh; }
+  .main{ padding:calc(var(--top-h) + 14px) 16px calc(var(--nav-h) + 96px); max-width:1120px; margin:0 auto; }
+  @media(min-width:1024px){ .main{ margin-left:var(--side-w); padding:calc(var(--top-h) + 22px) 32px 48px; max-width:none; } .main > *{ max-width:1080px; } }
+
+  /* Barra superior */
+  .topbar{ position:fixed; top:0; left:0; right:0; height:var(--top-h); z-index:55; display:flex; align-items:center; gap:.75rem;
+    padding:0 16px; background:var(--maroon-900); color:var(--gold-soft); border-bottom:2px solid var(--accent); }
+  @media(min-width:1024px){ .topbar{ left:var(--side-w); } .topbar .tb-logo, .topbar .tb-btn{ display:none; } }
+  .tb-logo{ width:34px; height:34px; border:1px solid var(--gold); border-radius:9px; display:flex; align-items:center; justify-content:center; color:var(--gold); font-family:var(--font-serif); font-style:italic; font-size:1.1rem; flex-shrink:0; }
+  .tb-title{ font-family:var(--font-serif); font-size:1.2rem; font-weight:500; line-height:1.1; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tb-title small{ display:block; font-family:var(--font-sans); font-size:.7rem; color:var(--gold); letter-spacing:.04em; }
+  .tb-btn{ min-height:40px; padding:0 .9rem; border-radius:10px; border:1px solid rgba(227,179,90,.55); color:var(--gold); background:transparent; font-size:.85rem; font-weight:600; display:flex; align-items:center; gap:.35rem; }
+  .tb-btn:hover{ background:rgba(227,179,90,.12); }
+  .tb-sync{ width:9px; height:9px; border-radius:50%; background:#c7a378; flex-shrink:0; }
+  .tb-sync.ok{ background:#7fc27a; box-shadow:0 0 0 3px rgba(127,194,122,.25); }
+  .tb-sync.err{ background:#e0654f; }
+
+  /* Línea de estado (sesión) */
+  #status{ font-size:.75rem; color:var(--text-soft); text-align:left; margin:0 0 14px; display:flex; flex-wrap:wrap; align-items:center; gap:.35rem; }
+  #status .btn-primary{ min-height:46px; font-size:.95rem; }
+
+  /* Navegación lateral (escritorio) */
+  .sidenav{ display:none; }
+  @media(min-width:1024px){
+    .sidenav{ display:flex; flex-direction:column; position:fixed; top:0; bottom:0; left:0; width:var(--side-w); z-index:56; background:var(--maroon-950); padding:16px 12px; gap:2px; overflow:auto; }
+  }
+  .sn-brand{ display:flex; align-items:center; gap:.7rem; padding:4px 8px 18px; border-bottom:1px solid rgba(227,179,90,.18); margin-bottom:10px; }
+  .sn-brand b{ font-family:var(--font-serif); font-style:italic; font-weight:500; color:var(--gold-soft); font-size:1.02rem; line-height:1.15; }
+  .sn-brand span{ display:block; font-size:.7rem; color:var(--gold); }
+  .sn-sec{ font-size:.66rem; letter-spacing:.12em; text-transform:uppercase; color:rgba(227,179,90,.6); padding:14px 12px 6px; }
+  .nav-item{ display:flex; align-items:center; gap:.75rem; width:100%; min-height:44px; padding:0 12px; border-radius:10px; color:#e9d9bd; background:transparent; border:none; font-size:.92rem; font-weight:500; text-align:left; }
+  .nav-item svg{ width:20px; height:20px; flex-shrink:0; opacity:.85; }
+  .nav-item:hover{ background:rgba(227,179,90,.10); }
+  .nav-item.active{ background:var(--gold); color:var(--maroon-950); font-weight:700; }
+  .nav-item.active svg{ opacity:1; }
+  .sn-cta{ margin-top:auto; min-height:48px; border-radius:12px; border:none; background:var(--accent); color:#fff; font-weight:700; font-size:.95rem; display:flex; align-items:center; justify-content:center; gap:.4rem; }
+
+  /* Barra inferior (móvil) */
+  .bottomnav{ position:fixed; left:0; right:0; bottom:0; height:calc(var(--nav-h) + env(safe-area-inset-bottom)); padding-bottom:env(safe-area-inset-bottom);
+    z-index:58; display:grid; grid-template-columns:repeat(5,1fr); background:var(--card-bg); border-top:1px solid var(--border-c); box-shadow:0 -4px 16px rgba(36,18,6,.06); }
+  @media(min-width:1024px){ .bottomnav{ display:none; } }
+  .bn-item{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; border:none; background:transparent; color:var(--text-soft); font-size:.68rem; font-weight:600; position:relative; }
+  .bn-item svg{ width:22px; height:22px; }
+  .bn-item.active{ color:var(--text-main); }
+  .bn-item.active::before{ content:''; position:absolute; top:0; left:28%; right:28%; height:3px; border-radius:0 0 3px 3px; background:var(--accent); }
+
+  /* Hoja "Más" */
+  .more-sheet .grid-more{ display:grid; grid-template-columns:repeat(3,1fr); gap:.6rem; margin-top:.5rem; }
+  .more-tile{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.45rem; min-height:92px; border-radius:var(--radius); border:1px solid var(--border-c); background:var(--card-bg); color:var(--text-main); font-size:.82rem; font-weight:600; text-align:center; padding:.5rem; }
+  .more-tile svg{ width:26px; height:26px; color:var(--accent); }
+  .more-tile.active{ border-color:var(--text-main); background:var(--gold-soft); }
+
+  /* Botón + encima de la barra inferior */
+  .fab{ bottom:calc(var(--nav-h) + 16px + env(safe-area-inset-bottom)); background:var(--accent); color:#fff; box-shadow:0 6px 18px rgba(185,119,47,.45); transition:transform .15s; }
+  .qmenu{ bottom:calc(var(--nav-h) + 84px + env(safe-area-inset-bottom)); }
+  .qmenu button{ box-shadow:var(--shadow); }
+  @media(min-width:1024px){ .fab{ bottom:24px; right:28px; } .qmenu{ bottom:92px; right:28px; } }
+  .save-indicator{ top:calc(var(--top-h) + 10px); bottom:auto; right:50%; transform:translateX(50%); border-radius:999px; padding:.45rem 1rem; z-index:80; }
+
+  /* Tarjetas y superficies */
+  .card, .chart-card{ border-radius:var(--radius); box-shadow:var(--shadow); }
+  .chart-card{ padding:1.1rem 1.15rem; }
+  #view h2.text-lg{ display:none; } /* el título ya va en la barra superior */
+
+  /* Hub */
+  .hub-hello{ display:flex; justify-content:space-between; align-items:flex-end; gap:1rem; flex-wrap:wrap; margin-bottom:14px; }
+  .hub-hello h2{ font-family:var(--font-serif); font-size:1.6rem; font-weight:500; line-height:1.1; }
+  .hub-hello p{ color:var(--text-soft); font-size:.85rem; }
+  .hub-hello p::first-letter{ text-transform:uppercase; }
+  #hubKpis .kpi{ background:var(--card-bg); border:1px solid var(--border-c); border-radius:var(--radius); padding:.85rem 1rem; box-shadow:var(--shadow); min-height:88px; }
+  #hubKpis .kpi .val{ font-size:1.55rem; margin-top:.2rem; }
+  #hubKpis button.kpi:hover{ border-color:var(--accent); }
+  #hubKpis .kpi .go{ float:right; color:var(--accent); font-size:.9rem; }
+  .qa-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:.6rem; margin-bottom:18px; }
+  @media(min-width:640px){ .qa-grid{ grid-template-columns:repeat(4,1fr); } }
+  .qa{ display:flex; align-items:center; gap:.7rem; min-height:60px; padding:.6rem .9rem; border-radius:var(--radius); border:1px solid var(--border-c); background:var(--card-bg); color:var(--text-main); text-align:left; font-weight:600; font-size:.88rem; box-shadow:var(--shadow); transition:border-color .15s, transform .1s; }
+  .qa:active{ transform:scale(.98); }
+  .qa:hover{ border-color:var(--accent); }
+  .qa .ic{ width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; background:var(--gold-soft); color:var(--accent); flex-shrink:0; }
+  .qa .ic svg{ width:20px; height:20px; }
+  .qa.primary{ background:var(--text-main); color:var(--card-bg); border-color:var(--text-main); }
+  .qa.primary .ic{ background:rgba(255,255,255,.12); color:var(--gold); }
+
+  /* Controles más grandes y táctiles */
+  input, select, textarea{ min-height:42px; border-radius:10px; padding:.45rem .7rem; font-size:16px; }
+  td input, td select{ min-height:36px; font-size:14px; }
+  label.text-xs{ display:flex; flex-direction:column; gap:4px; }
+  .btn-primary, .btn-soft{ min-height:42px; border-radius:10px; font-weight:600; }
+  .btn-primary{ background:var(--text-main); color:var(--card-bg); border-color:var(--text-main); }
+  .btn-primary:hover{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .btn-soft.text-xs, .btn-soft.px-2{ min-height:34px; }
+  button.text-xs{ min-height:32px; padding:0 .25rem; }
+
+  /* Tablas legibles */
+  .scrollx{ -webkit-overflow-scrolling:touch; }
+  .card.scrollx{ max-height:70vh; overflow:auto; padding:0 !important; }
+  .card.scrollx table th{ position:sticky; top:0; background:var(--card-bg); z-index:1; padding:.7rem .6rem; }
+  .card.scrollx table td:first-child, .card.scrollx table th:first-child{ padding-left:1rem; }
+  th{ text-transform:uppercase; letter-spacing:.05em; font-size:.68rem; border-bottom:1px solid var(--border-c); }
+  tbody tr:hover td{ background:rgba(185,119,47,.06); }
+  td{ white-space:nowrap; }
+
+  /* Pestañas como control segmentado */
+  .tab-btn{ margin-right:0 !important; padding:.55rem 1rem !important; border-radius:10px !important; border-bottom:none !important; font-weight:600; }
+  .tab-btn.active{ background:var(--text-main) !important; color:var(--card-bg) !important; }
+  #view > .flex:has(> .tab-btn){ background:var(--card-bg); border:1px solid var(--border-c); border-radius:12px; padding:4px; display:inline-flex; gap:2px; overflow-x:auto; max-width:100%; }
+
+  details.card > summary{ list-style:none; min-height:36px; display:flex; align-items:center; }
+  details.card > summary::before{ content:'▸'; margin-right:.5rem; color:var(--accent); transition:transform .15s; }
+  details.card[open] > summary::before{ transform:rotate(90deg); }
 </style>
 </head>
 <body class="min-h-screen">
-<div id="app" class="max-w-5xl mx-auto p-4 pb-16">
-  <header class="brand-header flex items-center justify-between mb-6 px-4 py-3">
-    <div id="brandLogo" class="flex items-center gap-3">
-      <div style="width:34px;height:34px;border:1px solid var(--gold);border-radius:.3rem;display:flex;align-items:center;justify-content:center;color:var(--gold);font-family:var(--font-serif);font-style:italic;font-size:1.1rem">D</div>
-      <div>
-        <h1 class="brand-name text-lg" style="color:var(--gold-soft)">D'Casa Angel's Bakery</h1>
-        <p class="text-xs" style="color:var(--gold)">Gestión de brownies</p>
-      </div>
-    </div>
-    <button id="btnHome" class="hidden px-3 py-1.5 text-sm btn-soft" style="border-color:var(--gold);color:var(--gold)">← Inicio</button>
+<div class="layout">
+  <nav class="sidenav" id="sideNav" aria-label="Navegación principal"></nav>
+  <header class="topbar">
+    <div class="tb-logo">D</div>
+    <div class="tb-title" id="tbTitle">Inicio<small>D'Casa Angel's Bakery</small></div>
+    <span class="tb-sync" id="tbSync" title="Estado de conexión"></span>
+    <button id="btnHome" class="tb-btn hidden" aria-label="Volver al inicio">← Inicio</button>
   </header>
-
-  <div id="status" class="text-xs text-center mb-3" style="color:var(--text-soft)">Conectando almacenamiento…</div>
-
-  <div id="home"></div>
-  <div id="view" class="hidden"></div>
+  <main class="main" id="app">
+    <div id="status">Conectando almacenamiento…</div>
+    <div id="home"></div>
+    <div id="view" class="hidden"></div>
+  </main>
+  <nav class="bottomnav" id="bottomNav" aria-label="Navegación"></nav>
 </div>
 <div id="saveIndicator" class="save-indicator hidden">Guardando…</div>
 
@@ -214,20 +331,26 @@ function inventarioBajo(insumos, producciones, sabores){
 }
 
 function renderHome(){
+  const fecha = new Date().toLocaleDateString('es-MX',{weekday:'long', day:'numeric', month:'long'});
+  const h = new Date().getHours();
+  const saludo = h<12?'Buenos días':h<19?'Buenas tardes':'Buenas noches';
+  const qa = (fn, ic, txt, cls='') => `<button class="qa ${cls}" onclick="${fn}"><span class="ic">${ICONS[ic]}</span><span>${txt}</span></button>`;
   $home.innerHTML = `
-    <div id="hubKpis" class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6"></div>
-    <div class="grid md:grid-cols-5 gap-5 mb-8">
-      <div class="md:col-span-3 chart-card" id="calBox"></div>
-      <div class="md:col-span-2 space-y-5">
-        <div class="chart-card" id="upcomingBox"></div>
-        <div class="chart-card" id="alertsBox"></div>
-      </div>
+    <div class="hub-hello"><div><p>${fecha}</p><h2>${saludo}</h2></div></div>
+    <div class="qa-grid">
+      ${qa('abrirVentaRapida()','ventas','Nueva venta','primary')}
+      ${qa("go('simulacion')",'simulacion','Planear producción')}
+      ${qa("go('inventario')",'inventario','Revisar inventario')}
+      ${qa("go('clientes')",'clientes','Clientes')}
     </div>
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-x-3">${MENU.map(m=>`
-      <button class="home-btn flex flex-col items-center gap-2" onclick="go('${m.id}')">
-        <div style="width:26px;height:26px;color:var(--accent)">${ICONS[m.id]}</div>
-        <span class="lbl text-center">${m.label}</span>
-      </button>`).join('')}</div>`;
+    <div id="hubKpis" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5"></div>
+    <div class="grid md:grid-cols-5 gap-4 mb-6">
+      <div class="md:col-span-3 chart-card" id="calBox"></div>
+      <div class="md:col-span-2 space-y-4">
+        <div class="chart-card" id="alertsBox"></div>
+        <div class="chart-card" id="upcomingBox"></div>
+      </div>
+    </div>`;
   renderCalendar();
   refreshHub();
 }
@@ -250,9 +373,9 @@ function renderHubKpis(){
   const bajos = inventarioBajo(hubData.insumos, hubData.producciones, hubData.sabores).length;
   const prox = allEventos().filter(e=>e.fecha>=hoy && e.fecha<=en7).length;
   el.innerHTML = `
-    <button class="kpi" onclick="go('dashboard')"><p class="lbl">Ventas del mes</p><p class="val">${moneyShort(totalMes)}</p></button>
-    <button class="kpi" onclick="go('ventas')"><p class="lbl">Por cobrar</p><p class="val">${moneyShort(porCobrar)}</p></button>
-    <button class="kpi" onclick="go('inventario')"><p class="lbl">Insumos por comprar</p><p class="val">${bajos}</p></button>
+    <button class="kpi" onclick="go('dashboard')"><span class="go">→</span><p class="lbl">Ventas del mes</p><p class="val">${moneyShort(totalMes)}</p></button>
+    <button class="kpi" onclick="go('ventas')"><span class="go">→</span><p class="lbl">Por cobrar</p><p class="val">${moneyShort(porCobrar)}</p></button>
+    <button class="kpi" onclick="go('inventario')"><span class="go">→</span><p class="lbl">Insumos por comprar</p><p class="val">${bajos}</p></button>
     <div class="kpi"><p class="lbl">Eventos en 7 días</p><p class="val">${prox}</p></div>`;
 }
 
@@ -351,12 +474,58 @@ window.delEvento = async id => {
   }catch(e){}
 };
 
+ICONS.inicio = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>`;
+ICONS.mas = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>`;
+const NAV_GRUPOS = [
+  {t:'Operación', ids:['ventas','simulacion','producciones','inventario']},
+  {t:'Catálogo', ids:['insumos','clientes','equipo']},
+  {t:'Análisis', ids:['dashboard']},
+];
+const BOTTOM = ['inicio','ventas','simulacion','inventario','mas'];
+const LABEL = Object.fromEntries(MENU.map(m=>[m.id,m.label]));
+LABEL.inicio='Inicio'; LABEL.simulacion='Simulación'; LABEL.mas='Más';
+const LABEL_CORTO = {inicio:'Inicio', ventas:'Ventas', simulacion:'Producir', inventario:'Inventario', mas:'Más'};
+
+function pintarNav(){
+  const act = window._vistaActual || 'inicio';
+  const it = id => `<button class="nav-item ${act===id?'active':''}" onclick="${id==='inicio'?'goHome()':`go('${id}')`}">${ICONS[id]}<span>${LABEL[id]}</span></button>`;
+  document.getElementById('sideNav').innerHTML = `
+    <div class="sn-brand"><div class="tb-logo">D</div><div><b>D'Casa Angel's Bakery</b><span>Gestión de brownies</span></div></div>
+    ${it('inicio')}
+    ${NAV_GRUPOS.map(g=>`<p class="sn-sec">${g.t}</p>${g.ids.map(it).join('')}`).join('')}
+    <button class="sn-cta" onclick="abrirVentaRapida()">+ Nueva venta</button>`;
+  const enMas = !BOTTOM.includes(act);
+  document.getElementById('bottomNav').innerHTML = BOTTOM.map(id=>{
+    const on = id==='mas' ? enMas : act===id;
+    const fn = id==='inicio' ? 'goHome()' : id==='mas' ? 'abrirMas()' : `go('${id}')`;
+    return `<button class="bn-item ${on?'active':''}" onclick="${fn}" aria-label="${LABEL[id]}">${ICONS[id]}<span>${LABEL_CORTO[id]}</span></button>`;
+  }).join('');
+  document.getElementById('tbTitle').innerHTML = (LABEL[act]||'Inicio') + `<small>D'Casa Angel's Bakery</small>`;
+  $btnHome.classList.toggle('hidden', act==='inicio');
+}
+window.abrirMas = ()=>{
+  const act = window._vistaActual || 'inicio';
+  const ov = document.createElement('div'); ov.className='qover'; ov.id='masOverlay';
+  ov.onclick = e=>{ if(e.target===ov) ov.remove(); };
+  const ids = ['dashboard','producciones','insumos','clientes','equipo','ventas','simulacion','inventario'];
+  ov.innerHTML = `<div class="qsheet more-sheet" style="padding-bottom:2rem">
+    <div class="flex justify-between items-center"><h3>Todas las secciones</h3><button class="qchip" onclick="document.getElementById('masOverlay').remove()">✕</button></div>
+    <div class="grid-more">${ids.map(id=>`<button class="more-tile ${act===id?'active':''}" onclick="document.getElementById('masOverlay').remove();go('${id}')">${ICONS[id]}<span>${LABEL[id]}</span></button>`).join('')}</div>
+  </div>`;
+  document.body.appendChild(ov);
+};
 window.go = function(id){
-  $home.classList.add('hidden'); $view.classList.remove('hidden'); $btnHome.classList.remove('hidden');
+  if(id==='inicio'){ goHome(); return; }
+  $home.classList.add('hidden'); $view.classList.remove('hidden');
   window._vistaActual = id;
+  pintarNav(); window.scrollTo({top:0});
   RENDERERS[id]();
 };
-$btnHome.onclick = ()=>{ $view.classList.add('hidden'); $home.classList.remove('hidden'); $btnHome.classList.add('hidden'); $view.innerHTML=''; window._vistaActual=''; renderHome(); };
+window.goHome = function(){
+  $view.classList.add('hidden'); $home.classList.remove('hidden'); $view.innerHTML=''; window._vistaActual='';
+  pintarNav(); window.scrollTo({top:0}); renderHome();
+};
+$btnHome.onclick = ()=>goHome();
 
 // ---------- helpers ----------
 const uid = ()=> Math.random().toString(36).slice(2,10);
@@ -479,7 +648,7 @@ async function initFirebase(){
       };
     });
   }
-  USER_EMAIL = user.email;
+  USER_EMAIL = user.email; document.getElementById('tbSync').className='tb-sync ok';
   $status.innerHTML = 'Sesión: '+esc(user.email)+' · guardado en la nube · <button id="logoutBtn" class="text-xs" style="text-decoration:underline">salir</button>';
   document.getElementById('logoutBtn').onclick = async ()=>{ await A.signOut(auth); location.reload(); };
 
@@ -505,7 +674,7 @@ async function initFirebase(){
     } else {
       DB = await initFirebase();
     }
-  }catch(e){ console.error(e); $status.textContent = 'No se pudo conectar con Firebase ('+(e && e.code ? e.code : 'error')+').'; }
+  }catch(e){ console.error(e); document.getElementById('tbSync').className='tb-sync err'; $status.textContent = 'No se pudo conectar con Firebase ('+(e && e.code ? e.code : 'error')+').'; }
   finally{ dbReadyResolve(); applyChartDefaults(); }
 })();
 
@@ -1399,7 +1568,7 @@ window.delCliente = async(id)=>{ try{ await docDelete('clientes', id); window.go
     </div>`;
     const sh = ov.querySelector('.qsheet'); sh.scrollTop = sc;
   }
-  window.pintarQS = pintarQS; window.cerrarQS = ()=>{ const o=document.getElementById('qsOverlay'); if(o) o.remove(); qs=null; };
+  window.pintarQS = pintarQS; window.abrirVentaRapida = abrirVentaRapida; window.cerrarQS = ()=>{ const o=document.getElementById('qsOverlay'); if(o) o.remove(); qs=null; };
   window.qsSet = (k,v)=>{ qs[k]=v; if(k==='tipo') qs.cliente=''; pintarQS(); };
   window.qsCliente = n=>{ qs.cliente = qs.cliente===n? '' : n; pintarQS(); };
   window.qsItem = (s,d)=>{ qs.items[s] = Math.max(0, num(qs.items[s])+d); if(!qs.items[s]) delete qs.items[s]; qs.montoManual=false; pintarQS(); };
@@ -1419,6 +1588,7 @@ window.delCliente = async(id)=>{ try{ await docDelete('clientes', id); window.go
 })();
 
 // Arranque: el hub se pinta al final, cuando todo lo demás ya está definido
+pintarNav();
 renderHome();
 
 // Mantener el hub al día con lo que registren los demás (sin pisar lo que estás escribiendo)
