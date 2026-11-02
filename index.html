@@ -124,6 +124,35 @@
 
   .save-indicator{ position:fixed; bottom:84px; right:14px; background:var(--text-main); color:var(--card-bg); padding:.4rem .8rem; border-radius:.35rem; font-size:.75rem; z-index:50; transition:opacity .2s; }
 
+
+  /* ---- Cursos y eventos ---- */
+  .ag-sum{ display:grid; grid-template-columns:repeat(2,1fr); gap:.6rem; margin-bottom:14px; }
+  @media(min-width:640px){ .ag-sum{ grid-template-columns:repeat(4,1fr); } }
+  .ag-sum button{ text-align:left; background:var(--card-bg); border:1px solid var(--border-c); border-radius:var(--radius); padding:.75rem .9rem; box-shadow:var(--shadow); }
+  .ag-sum button.on{ border-color:var(--text-main); box-shadow:0 0 0 1px var(--text-main); }
+  .ag-sum .n{ font-family:var(--font-serif); font-size:1.6rem; line-height:1; }
+  .ag-sum .l{ font-size:.72rem; color:var(--text-soft); margin-top:.3rem; }
+  .ag-filtros{ display:flex; gap:.4rem; overflow-x:auto; margin-bottom:12px; padding-bottom:2px; }
+  .ag-chip{ white-space:nowrap; min-height:36px; padding:0 .9rem; border-radius:999px; border:1px solid var(--border-c); background:var(--card-bg); font-size:.82rem; font-weight:600; color:var(--text-main); }
+  .ag-chip.on{ background:var(--text-main); color:var(--card-bg); border-color:var(--text-main); }
+  .ag-grupo{ font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; color:var(--text-soft); margin:18px 0 8px; display:flex; align-items:center; gap:.5rem; }
+  .ag-grupo::after{ content:''; flex:1; height:1px; background:var(--border-c); }
+  .ag-item{ display:flex; gap:.8rem; background:var(--card-bg); border:1px solid var(--border-c); border-radius:var(--radius); padding:.85rem .95rem; margin-bottom:.55rem; box-shadow:var(--shadow); border-left:4px solid var(--c); }
+  .ag-item.usado{ opacity:.55; }
+  .ag-fecha{ flex-shrink:0; width:52px; text-align:center; border-radius:10px; background:var(--gold-soft); padding:.35rem 0; align-self:flex-start; }
+  .ag-fecha b{ display:block; font-family:var(--font-serif); font-size:1.35rem; line-height:1; }
+  .ag-fecha span{ font-size:.64rem; text-transform:uppercase; letter-spacing:.06em; color:var(--text-soft); }
+  .ag-body{ flex:1; min-width:0; }
+  .ag-body h4{ font-weight:600; font-size:.95rem; line-height:1.25; }
+  .ag-body p{ font-size:.78rem; color:var(--text-soft); margin-top:.2rem; }
+  .ag-meta{ display:flex; flex-wrap:wrap; gap:.35rem; margin-top:.45rem; align-items:center; }
+  .ag-badge{ font-size:.7rem; font-weight:700; padding:.15rem .55rem; border-radius:999px; background:var(--gold-soft); color:var(--text-main); }
+  .ag-badge.rojo{ background:#f6dcd5; color:#9a2f1f; }
+  .ag-badge.ambar{ background:#f8e7c9; color:#8a5a12; }
+  .ag-badge.verde{ background:#dcebd8; color:#3a6a35; }
+  .ag-acc{ display:flex; flex-wrap:wrap; gap:.2rem .9rem; margin-top:.55rem; }
+  .ag-acc button{ font-size:.78rem; font-weight:600; color:var(--accent); background:none; border:none; padding:0; min-height:28px; }
+  .ag-acc button.del{ color:var(--danger); }
   /* ================== REDISEÑO HUD ================== */
   *,*::before,*::after{ box-sizing:border-box; }
   .hidden{ display:none !important; }
@@ -263,6 +292,7 @@
 
 <script>
 const ICONS = {
+  agenda:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/><path d="M9 15l2 2 4-4"/></svg>`,
   dashboard:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>`,
   insumos:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z" opacity="0"/><path d="M6 3h12v18H6z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>`,
   ventas:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M15 9.5c0-1.4-1.3-2.5-3-2.5s-3 1-3 2.3c0 3 6 1.4 6 4.3 0 1.4-1.3 2.4-3 2.4s-3-1-3-2.4"/></svg>`,
@@ -282,6 +312,7 @@ const MENU = [
   {id:'equipo', label:'Equipo'},
   {id:'inventario', label:'Inventario'},
   {id:'clientes', label:'Clientes'},
+  {id:'agenda', label:'Cursos y eventos'},
 ];
 
 let DB = null;
@@ -299,8 +330,8 @@ const $btnHome = document.getElementById('btnHome');
 const $save = document.getElementById('saveIndicator');
 
 // ============ HUB INICIAL: datos clave + calendario + accesos ============
-const EVENT_TYPES = {entrega:'Entrega', produccion:'Producción', pago:'Cobro / pago', compra:'Compra', certificado:'Certificado', otro:'Otro'};
-const EVENT_COLORS = {entrega:'#b9772f', produccion:'#2e1a0c', pago:'#4f7a4a', compra:'#8f4a34', certificado:'#3f6b8a', otro:'#8a6a46'};
+const EVENT_TYPES = {entrega:'Entrega', produccion:'Producción', pago:'Cobro / pago', compra:'Compra', certificado:'Certificado', curso:'Curso / taller', evento:'Evento', otro:'Otro'};
+const EVENT_COLORS = {entrega:'#b9772f', produccion:'#2e1a0c', pago:'#4f7a4a', compra:'#8f4a34', certificado:'#3f6b8a', curso:'#6b4f8a', evento:'#2f7d7a', otro:'#8a6a46'};
 const pad2 = n=>String(n).padStart(2,'0');
 const ymd = d => d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -477,6 +508,9 @@ function renderAlerts(){
   if(bajos.length>4) rows.push(row('var(--danger)', 'y '+(bajos.length-4)+' insumos más por comprar', 'inventario'));
   if(sinCerrar) rows.push(row('var(--accent)', sinCerrar+(sinCerrar===1?' venta sin marcar como pagada':' ventas sin marcar como pagadas'), 'ventas'));
   if(pend) rows.push(row('var(--text-soft)', pend+(pend===1?' venta pendiente':' ventas pendientes'), 'ventas'));
+  const hoyA = ymd(new Date()), en30A = ymd(new Date(Date.now()+30*86400000));
+  const porVencer = hubData.eventos.filter(e=>AGENDA_TIPOS.includes(e.tipo) && !e.usado && e.fecha>=hoyA && e.fecha<=en30A);
+  if(porVencer.length) rows.unshift(row('#3f6b8a', porVencer.length+(porVencer.length===1?' curso/certificado vence':' cursos/certificados vencen')+' en 30 días', 'agenda'));
   el.innerHTML = `<p class="chart-title">Requiere atención</p>` + (rows.join('') || '<p class="text-xs" style="color:var(--text-soft)">Todo en orden.</p>');
 }
 
@@ -510,6 +544,7 @@ ICONS.inicio = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strok
 ICONS.mas = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>`;
 const NAV_GRUPOS = [
   {t:'Operación', ids:['ventas','simulacion','producciones','inventario']},
+  {t:'Agenda', ids:['agenda']},
   {t:'Catálogo', ids:['insumos','clientes','equipo']},
   {t:'Análisis', ids:['dashboard']},
 ];
@@ -539,7 +574,7 @@ window.abrirMas = ()=>{
   const act = window._vistaActual || 'inicio';
   const ov = document.createElement('div'); ov.className='qover'; ov.id='masOverlay';
   ov.onclick = e=>{ if(e.target===ov) ov.remove(); };
-  const ids = ['dashboard','producciones','insumos','clientes','equipo','ventas','simulacion','inventario'];
+  const ids = ['agenda','dashboard','producciones','insumos','clientes','equipo','ventas','simulacion','inventario'];
   ov.innerHTML = `<div class="qsheet more-sheet" style="padding-bottom:2rem">
     <div class="flex justify-between items-center"><h3>Todas las secciones</h3><button class="qchip" onclick="document.getElementById('masOverlay').remove()">✕</button></div>
     <div class="grid-more">${ids.map(id=>`<button class="more-tile ${act===id?'active':''}" onclick="document.getElementById('masOverlay').remove();go('${id}')">${ICONS[id]}<span>${LABEL[id]}</span></button>`).join('')}</div>
@@ -742,6 +777,94 @@ async function initFirebase(){
 
 // ============ RENDERERS ============
 const RENDERERS = {};
+
+// ---- CURSOS Y EVENTOS ----
+const AGENDA_TIPOS = ['certificado','curso','evento'];
+let agFiltro = {tramo:'todos', tipo:'todos'};
+const diasHasta = f => Math.round((new Date(f+'T00:00:00') - new Date(ymd(new Date())+'T00:00:00'))/86400000);
+function cuentaRegresiva(e){
+  if(e.usado) return '<span class="ag-badge verde">✓ Usado</span>';
+  const d = diasHasta(e.fecha);
+  const venceTxt = e.tipo==='certificado' ? 'Vence' : 'Es';
+  if(d<0)  return `<span class="ag-badge">Pasó hace ${-d} día${d===-1?'':'s'}</span>`;
+  if(d===0) return `<span class="ag-badge rojo">${venceTxt} hoy</span>`;
+  const cls = d<=7?'rojo':d<=30?'ambar':'';
+  return `<span class="ag-badge ${cls}">${d===1?(venceTxt==='Vence'?'Vence mañana':'Mañana'):'Faltan '+d+' días'}</span>`;
+}
+RENDERERS.agenda = async function(){
+  $view.innerHTML = `<h2 class="text-lg font-bold mb-3">Cursos y eventos</h2><div id="agBox"><p class="text-sm" style="color:var(--text-soft)">Cargando…</p></div>`;
+  hubData.eventos = await colGet('eventos');
+  pintarAgenda();
+};
+function pintarAgenda(){
+  const box = document.getElementById('agBox'); if(!box) return;
+  const evs = hubData.eventos.filter(e=>AGENDA_TIPOS.includes(e.tipo) && e.fecha);
+  const tramoDe = e => { const d = diasHasta(e.fecha); return d<0?'pasados': d<=30?'pronto': d<=90?'trimestre':'despues'; };
+  const cuenta = t => evs.filter(e=>tramoDe(e)===t && (t==='pasados' || !e.usado)).length;
+  const TRAMOS = [['pronto','Próximos 30 días'],['trimestre','31 a 90 días'],['despues','Más adelante'],['pasados','Ya pasaron']];
+  let lista = evs.filter(e=>agFiltro.tipo==='todos' || e.tipo===agFiltro.tipo);
+  lista = agFiltro.tramo==='todos' ? lista.filter(e=>tramoDe(e)!=='pasados') : lista.filter(e=>tramoDe(e)===agFiltro.tramo);
+  lista.sort((a,b)=> agFiltro.tramo==='pasados' ? b.fecha.localeCompare(a.fecha) : (a.usado-b.usado) || a.fecha.localeCompare(b.fecha));
+  // Agrupar por mes
+  const grupos = {};
+  lista.forEach(e=>{ const k = e.fecha.slice(0,7); (grupos[k]=grupos[k]||[]).push(e); });
+  const mesTxt = k => new Date(k+'-01T00:00:00').toLocaleDateString('es-MX',{month:'long', year:'numeric'});
+  const item = e => {
+    const d = new Date(e.fecha+'T00:00:00');
+    return `<div class="ag-item ${e.usado?'usado':''}" style="--c:${EVENT_COLORS[e.tipo]||EVENT_COLORS.otro}">
+      <div class="ag-fecha"><b>${d.getDate()}</b><span>${d.toLocaleDateString('es-MX',{month:'short'}).replace('.','')}</span></div>
+      <div class="ag-body">
+        <h4>${esc(e.titulo)}</h4>
+        ${e.nota?`<p>${esc(e.nota)}</p>`:''}
+        <div class="ag-meta"><span class="ag-badge" style="background:transparent;border:1px solid var(--border-c)">${EVENT_TYPES[e.tipo]||''}</span>${cuentaRegresiva(e)}</div>
+        <div class="ag-acc">
+          <button onclick="agVerCal('${e.fecha}')">Ver en calendario</button>
+          <button onclick="agUsado('${e.id}')">${e.usado?'Desmarcar':(e.tipo==='certificado'?'Marcar como usado':'Marcar como hecho')}</button>
+          <button class="del" onclick="agBorrar('${e.id}')">Eliminar</button>
+        </div>
+      </div>
+    </div>`;
+  };
+  box.innerHTML = `
+    <div class="ag-sum">${TRAMOS.map(([k,l])=>`<button class="${agFiltro.tramo===k?'on':''}" onclick="agTramo('${k}')"><div class="n">${cuenta(k)}</div><div class="l">${l}</div></button>`).join('')}</div>
+    <div class="ag-filtros">
+      ${[['todos','Todos'],['certificado','Certificados'],['curso','Cursos'],['evento','Eventos']].map(([k,l])=>`<button class="ag-chip ${agFiltro.tipo===k?'on':''}" onclick="agTipo('${k}')">${l}</button>`).join('')}
+      <button class="ag-chip ${agFiltro.tramo==='todos'?'on':''}" onclick="agTramo('todos')">Todo lo próximo</button>
+    </div>
+    ${Object.keys(grupos).map(k=>`<p class="ag-grupo">${mesTxt(k)}</p>${grupos[k].map(item).join('')}`).join('')
+      || '<div class="card" style="text-align:center;padding:1.5rem"><p class="text-sm" style="color:var(--text-soft)">No hay nada en este rango.</p></div>'}
+    <details class="card mt-5" style="padding:1rem">
+      <summary class="text-sm font-semibold">Agregar curso, certificado o evento</summary>
+      <div class="grid sm:grid-cols-2 gap-2 mt-3">
+        <input id="ag_titulo" placeholder="Nombre (ej. Taller de costos)" class="sm:col-span-2">
+        <select id="ag_tipo"><option value="curso">Curso / taller</option><option value="evento">Evento</option><option value="certificado">Certificado (vencimiento)</option></select>
+        <input id="ag_fecha" type="date" value="${ymd(new Date())}">
+        <input id="ag_nota" placeholder="Nota: lugar, quién lo da, qué incluye…" class="sm:col-span-2">
+        <button class="btn-primary sm:col-span-2" onclick="agAgregar()">Guardar</button>
+      </div>
+    </details>`;
+}
+window.agTramo = t => { agFiltro.tramo = t; pintarAgenda(); };
+window.agTipo = t => { agFiltro.tipo = t; pintarAgenda(); };
+window.agVerCal = f => { goHome(); setTimeout(()=>calPick(f, true), 50); };
+window.agUsado = async id => {
+  const e = hubData.eventos.find(x=>x.id===id); if(!e) return;
+  const {id:_, ...data} = e; data.usado = !e.usado;
+  try{ await docSet('eventos', id, data); e.usado = data.usado; pintarAgenda(); }catch(err){}
+};
+window.agBorrar = async id => {
+  const e = hubData.eventos.find(x=>x.id===id);
+  if(!confirm('¿Eliminar "'+(e?e.titulo:'')+'"?')) return;
+  try{ await docDelete('eventos', id); hubData.eventos = hubData.eventos.filter(x=>x.id!==id); pintarAgenda(); }catch(err){}
+};
+window.agAgregar = async () => {
+  const titulo = document.getElementById('ag_titulo').value.trim();
+  const fecha = document.getElementById('ag_fecha').value;
+  if(!titulo || !fecha){ alert('Escribe el nombre y la fecha.'); return; }
+  const ev = {titulo, fecha, tipo:document.getElementById('ag_tipo').value, nota:document.getElementById('ag_nota').value.trim()};
+  const id = uid();
+  try{ await docSet('eventos', id, ev); hubData.eventos.push({id, ...ev}); pintarAgenda(); }catch(err){}
+};
 
 // ---- DASHBOARD ----
 RENDERERS.dashboard = async function(){
