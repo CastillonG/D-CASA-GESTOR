@@ -299,8 +299,8 @@ const $btnHome = document.getElementById('btnHome');
 const $save = document.getElementById('saveIndicator');
 
 // ============ HUB INICIAL: datos clave + calendario + accesos ============
-const EVENT_TYPES = {entrega:'Entrega', produccion:'Producción', pago:'Cobro / pago', compra:'Compra', otro:'Otro'};
-const EVENT_COLORS = {entrega:'#b9772f', produccion:'#2e1a0c', pago:'#4f7a4a', compra:'#8f4a34', otro:'#8a6a46'};
+const EVENT_TYPES = {entrega:'Entrega', produccion:'Producción', pago:'Cobro / pago', compra:'Compra', certificado:'Certificado', otro:'Otro'};
+const EVENT_COLORS = {entrega:'#b9772f', produccion:'#2e1a0c', pago:'#4f7a4a', compra:'#8f4a34', certificado:'#3f6b8a', otro:'#8a6a46'};
 const pad2 = n=>String(n).padStart(2,'0');
 const ymd = d => d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -355,11 +355,43 @@ function renderHome(){
   refreshHub();
 }
 
+// ---------- Certificados FIRE CAMP 2026 / Incubación (se agregan una sola vez, sin tocar eventos existentes) ----------
+const CERTIFICADOS = [
+  {id:'cert_01', fecha:'2026-12-31', titulo:'Vence: Asesoría para Financiamiento', nota:'Instituto Sonorense de la Juventud (César Federico) · plan de negocios + gestión FIDESON $25,000–$200,000 · vigente desde 24 oct 2026'},
+  {id:'cert_04', fecha:'2026-12-31', titulo:'Vence: Servicios de Propiedad Intelectual', nota:'Guevara PI (Alejandro Varela) · 1 dictamen de factibilidad de marca + 1 h de asesoría · valor $2,500'},
+  {id:'cert_06', fecha:'2026-12-31', titulo:'Vence: Capacitación en Marketing Relacional', nota:'Crosby (Jonathan Crosby) · 1 a 3 sesiones para el equipo · valor $20,000 por persona'},
+  {id:'cert_08', fecha:'2027-01-31', titulo:'Vence: Incubación Empresarial (Fast Track)', nota:'H. Ayuntamiento de Hermosillo – Agencia Municipal de Desarrollo Económico · vigente hasta enero 2027 (día no especificado)'},
+  {id:'cert_02', fecha:'2027-04-24', titulo:'Vence: Consultoría en Operaciones', nota:'Torres, Garza y Asociados (Yessica Torres) · 5 h de consultoría · valor $54,600'},
+  {id:'cert_03', fecha:'2027-04-24', titulo:'Vence: Consultoría en Desarrollo de Negocios', nota:'3i Despacho de Innovación (Mauricio Velázquez) · 3 h de consultoría · valor $15,000'},
+  {id:'cert_05', fecha:'2027-04-24', titulo:'Vence: Consultoría en Análisis de Datos', nota:'Dakribos (Arian Milanes) · 2 h sobre datos y mercado · valor $800 por persona'},
+  {id:'cert_07', fecha:'2027-04-24', titulo:'Vence: Coaching en Negocios Conscientes', nota:'Ana Lourdes Vega · 5 h para el líder o el equipo · valor $6,000'},
+];
+let _certSembrado = false;
+async function sembrarCertificados(){
+  if(_certSembrado) return false; _certSembrado = true;
+  const db = await ensureDB(); if(!db) return false;
+  try{
+    const config = await colGet('config');
+    if(config.some(d=>d.id==='seedCertificados2026')) return false;   // ya se agregaron antes (respeta si borraste alguno)
+    const existentes = new Set(hubData.eventos.map(e=>e.id));
+    let n = 0;
+    for(const c of CERTIFICADOS){
+      if(existentes.has(c.id)) continue;                               // nunca sobrescribe
+      const {id, ...ev} = c; const data = {...ev, tipo:'certificado'};
+      await db.collection('eventos').doc(id).set(data);
+      hubData.eventos.push({id, ...data}); n++;
+    }
+    await db.collection('config').doc('seedCertificados2026').set({fecha:new Date().toISOString(), agregados:n});
+    return n>0;
+  }catch(e){ console.error('No se pudieron agregar los certificados', e); _certSembrado = false; return false; }
+}
+
 async function refreshHub(){
   const [ventas, insumos, eventos, producciones, sabores] = await Promise.all([
     colGet('ventas'), colGet('insumos'), colGet('eventos'), colGet('producciones'), colGet('sabores')
   ]);
   hubData = {ventas, insumos, eventos, producciones, sabores};
+  await sembrarCertificados();
   if(!document.getElementById('hubKpis')) return; // el usuario ya navegó a otra sección
   renderHubKpis(); renderCalendar(); renderUpcoming(); renderAlerts();
 }
