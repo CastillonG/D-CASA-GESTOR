@@ -670,14 +670,44 @@ async function initFirebase(){
   const auth = A.getAuth(app);
   const fs = F.getFirestore(app);
 
+  try{ await A.setPersistence(auth, A.browserLocalPersistence); }catch(e){}
+  // Si regresamos de un inicio de sesión por redirección, recoger el resultado
+  let redirErr = null;
+  try{ await A.getRedirectResult(auth); }catch(e){ redirErr = e; console.error(e); }
   let user = await new Promise(res=>{ const un = A.onAuthStateChanged(auth, u=>{ un(); res(u); }); });
   if(!user){
-    $status.innerHTML = '<button id="loginBtn" class="btn-primary">Entrar con Google</button>';
+    const MSG = {
+      'auth/unauthorized-domain': 'Este dominio ('+location.hostname+') no está autorizado. En Firebase Console → Authentication → Settings → Dominios autorizados, agrega: '+location.hostname,
+      'auth/operation-not-allowed': 'El acceso con Google está desactivado. Actívalo en Firebase Console → Authentication → Sign-in method → Google.',
+      'auth/network-request-failed': 'Sin conexión a internet o la red bloquea Google. Revisa tu conexión.',
+      'auth/internal-error': 'Error interno de Google. Cierra la pestaña, vuelve a abrir la página y reintenta.',
+      'auth/web-storage-unsupported': 'El navegador bloquea el almacenamiento (modo incógnito o cookies desactivadas). Usa una ventana normal.'
+    };
+    const pintarLogin = err => {
+      const code = err && err.code ? err.code : '';
+      $status.innerHTML = '<div style="display:flex;flex-direction:column;gap:.5rem;width:100%;max-width:420px">'
+        + '<button id="loginBtn" class="btn-primary">Entrar con Google</button>'
+        + (err ? '<p style="color:var(--danger);font-size:.8rem">No se pudo iniciar sesión'+(code?' ('+esc(code)+')':'')+'. '+esc(MSG[code]||(err.message||''))+'</p>' : '')
+        + '</div>';
+    };
+    pintarLogin(redirErr);
     user = await new Promise(res=>{
-      document.getElementById('loginBtn').onclick = async ()=>{
-        try{ const r = await A.signInWithPopup(auth, new A.GoogleAuthProvider()); res(r.user); }
-        catch(e){ alert('No se pudo iniciar sesión: '+(e && e.code ? e.code : 'error')); }
+      const conectar = ()=>{
+        document.getElementById('loginBtn').onclick = async ()=>{
+          const prov = new A.GoogleAuthProvider(); prov.setCustomParameters({prompt:'select_account'});
+          try{ const r = await A.signInWithPopup(auth, prov); res(r.user); }
+          catch(e){
+            console.error(e);
+            const code = e && e.code || '';
+            // Si la ventana emergente no funciona (bloqueada, cerrada, navegador de app, celular), entrar por redirección
+            if(['auth/popup-blocked','auth/popup-closed-by-user','auth/cancelled-popup-request','auth/operation-not-supported-in-this-environment','auth/web-storage-unsupported'].includes(code)){
+              try{ await A.signInWithRedirect(auth, prov); return; }catch(e2){ console.error(e2); pintarLogin(e2); conectar(); return; }
+            }
+            pintarLogin(e); conectar();
+          }
+        };
       };
+      conectar();
     });
   }
   USER_EMAIL = user.email; document.getElementById('tbSync').className='tb-sync ok';
