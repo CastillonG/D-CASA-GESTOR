@@ -125,6 +125,35 @@
   .save-indicator{ position:fixed; bottom:84px; right:14px; background:var(--text-main); color:var(--card-bg); padding:.4rem .8rem; border-radius:.35rem; font-size:.75rem; z-index:50; transition:opacity .2s; }
 
 
+
+  /* ---- Retroalimentación: toasts, sin conexión, estados vacíos ---- */
+  .toasts{ position:fixed; top:calc(var(--top-h) + 10px); left:50%; transform:translateX(-50%); z-index:90; display:flex; flex-direction:column; gap:.5rem; width:min(440px, calc(100vw - 32px)); pointer-events:none; }
+  @media(min-width:1024px){ .toasts{ left:calc(50% + var(--side-w)/2); } }
+  .toast{ pointer-events:auto; display:flex; align-items:flex-start; gap:.65rem; padding:.7rem .8rem .7rem .9rem; border-radius:12px; background:var(--text-main); color:var(--card-bg); font-size:.86rem; line-height:1.35; box-shadow:0 8px 24px rgba(36,18,6,.25); animation:tIn .18s ease-out; }
+  .toast.out{ animation:tOut .18s ease-in forwards; }
+  .toast .ti{ flex-shrink:0; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.75rem; font-weight:800; margin-top:1px; }
+  .toast.ok .ti{ background:#7fc27a; color:#173d14; }
+  .toast.err{ background:#7a2418; } .toast.err .ti{ background:#fff; color:#7a2418; }
+  .toast.warn .ti{ background:var(--gold); color:var(--maroon-950); }
+  .toast.info .ti{ background:rgba(255,255,255,.18); color:#fff; }
+  .toast .tm{ flex:1; }
+  .toast .ta{ flex-shrink:0; background:none; border:none; color:var(--gold); font-weight:700; font-size:.85rem; min-height:28px; padding:0 .3rem; text-decoration:underline; text-underline-offset:3px; }
+  .toast .tx{ flex-shrink:0; background:none; border:none; color:rgba(255,255,255,.6); font-size:1rem; min-height:24px; padding:0 .2rem; }
+  @keyframes tIn{ from{ opacity:0; transform:translateY(-8px); } to{ opacity:1; transform:none; } }
+  @keyframes tOut{ to{ opacity:0; transform:translateY(-8px); } }
+  .offline-bar{ position:fixed; top:var(--top-h); left:0; right:0; z-index:54; background:#7a2418; color:#fff; font-size:.8rem; padding:.45rem 16px; text-align:center; }
+  @media(min-width:1024px){ .offline-bar{ left:var(--side-w); } }
+  .tb-sync.off{ background:#9b9b9b; }
+  .tb-sync.busy{ background:var(--gold); animation:pulse 1s infinite; }
+  @keyframes pulse{ 50%{ opacity:.35; } }
+  .empty{ text-align:center; padding:1.6rem 1rem; border:1.5px dashed var(--border-c); border-radius:var(--radius); background:var(--card-bg); }
+  .empty .ei{ font-size:1.6rem; }
+  .empty h4{ font-weight:700; margin-top:.35rem; }
+  .empty p{ font-size:.82rem; color:var(--text-soft); margin:.25rem auto .8rem; max-width:320px; }
+  .empty button{ min-height:40px; padding:0 1rem; border-radius:10px; background:var(--text-main); color:var(--card-bg); font-weight:600; font-size:.85rem; border:none; }
+  .conn-card{ background:var(--card-bg); border:1px solid var(--border-c); border-left:4px solid var(--danger); border-radius:var(--radius); padding:.9rem 1rem; font-size:.85rem; width:100%; }
+  .conn-card b{ display:block; margin-bottom:.2rem; }
+  .conn-card button{ margin-top:.6rem; min-height:38px; padding:0 1rem; border-radius:10px; background:var(--text-main); color:var(--card-bg); font-weight:600; border:none; }
   /* ---- Cursos y eventos ---- */
   .ag-sum{ display:grid; grid-template-columns:repeat(2,1fr); gap:.6rem; margin-bottom:14px; }
   @media(min-width:640px){ .ag-sum{ grid-template-columns:repeat(4,1fr); } }
@@ -289,6 +318,8 @@
   <nav class="bottomnav" id="bottomNav" aria-label="Navegación"></nav>
 </div>
 <div id="saveIndicator" class="save-indicator hidden">Guardando…</div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<div class="offline-bar hidden" id="offlineBar">Sin internet. Lo que registres ahora puede no guardarse; espera a que vuelva la conexión.</div>
 
 <script>
 const ICONS = {
@@ -607,6 +638,67 @@ function isoWeekKey(d){
 }
 function showSaving(on){ $save.classList.toggle('hidden', !on); }
 
+// ================= Retroalimentación: siempre saber qué pasó, poder deshacer y qué sigue =================
+function toast(msg, {tipo='info', accion=null, dur=null}={}){
+  const box = document.getElementById('toasts'); if(!box) return;
+  if([...box.querySelectorAll('.tm')].some(x=>x.textContent===msg)) return; // no repetir el mismo aviso
+  const ic = {ok:'✓', err:'!', warn:'!', info:'i'}[tipo] || 'i';
+  const t = document.createElement('div'); t.className = 'toast '+tipo; t.setAttribute('role', tipo==='err'?'alert':'status');
+  t.innerHTML = `<span class="ti">${ic}</span><span class="tm"></span>${accion?'<button class="ta"></button>':''}<button class="tx" aria-label="Cerrar">✕</button>`;
+  t.querySelector('.tm').textContent = msg;
+  const cerrar = ()=>{ if(!t.isConnected) return; t.classList.add('out'); setTimeout(()=>t.remove(), 180); };
+  if(accion){ const b = t.querySelector('.ta'); b.textContent = accion.txt; b.onclick = ()=>{ cerrar(); accion.fn(); }; }
+  t.querySelector('.tx').onclick = cerrar;
+  box.appendChild(t);
+  while(box.children.length > 3) box.firstChild.remove();
+  setTimeout(cerrar, dur || (accion ? 7000 : tipo==='err' ? 8000 : 3200));
+  return t;
+}
+window.toast = toast;
+// Los avisos antiguos (alert) ahora salen como toasts que no bloquean la pantalla
+window.alert = msg => {
+  msg = String(msg||'');
+  const tipo = /^(Listo|Producción guardada)/.test(msg) ? 'ok' : /^No se pudo|no tiene permiso/i.test(msg) ? 'err' : 'warn';
+  toast(msg, {tipo});
+};
+// Volver a pintar la pantalla actual (tras deshacer o reintentar)
+function rePintar(){
+  if(window._vistaActual && RENDERERS[window._vistaActual]) RENDERERS[window._vistaActual]();
+  else if(typeof renderHome==='function') renderHome();
+}
+const syncDot = estado => { const d = document.getElementById('tbSync'); if(d && !d.classList.contains('err')) d.className = 'tb-sync '+estado; };
+let _pend = 0;
+function trabajando(on){
+  _pend += on ? 1 : -1; if(_pend<0) _pend = 0;
+  showSaving(_pend>0);
+  syncDot(_pend>0 ? 'busy' : (navigator.onLine ? 'ok' : 'off'));
+}
+// Conexión
+function pintarConexion(){
+  const off = !navigator.onLine;
+  document.getElementById('offlineBar').classList.toggle('hidden', !off);
+  if(USER_EMAIL) syncDot(off ? 'off' : 'ok');
+}
+window.addEventListener('offline', ()=>{ pintarConexion(); toast('Te quedaste sin internet.', {tipo:'warn'}); });
+window.addEventListener('online',  ()=>{ pintarConexion(); toast('Conexión recuperada.', {tipo:'ok'}); rePintar(); });
+// Errores inesperados: avisar con salida clara en lugar de dejar la pantalla congelada
+let _ultErr = 0;
+function errorGlobal(e){
+  console.error(e);
+  if(Date.now()-_ultErr < 4000) return; _ultErr = Date.now();
+  toast('Algo no salió bien en esta pantalla.', {tipo:'err', accion:{txt:'Recargar', fn:()=>location.reload()}});
+}
+window.addEventListener('error', e=>{ if(e && e.message && !/Script error/.test(e.message)) errorGlobal(e.error||e.message); });
+window.addEventListener('unhandledrejection', e=>{ const r=e.reason; if(r && (r.message==='db_unavailable' || r.code)) return; errorGlobal(r); });
+// Estado vacío consistente: qué es, por qué está vacío y qué hacer
+function vacio(icono, titulo, texto, cta, fn){
+  return `<div class="empty"><div class="ei">${icono}</div><h4>${titulo}</h4><p>${texto}</p>${cta?`<button onclick="${fn}">${cta}</button>`:''}</div>`;
+}
+window.vacio = vacio;
+// Memoria local de lo último leído/guardado para poder deshacer eliminaciones
+const CACHE = {};
+const nombreDe = d => d && (d.nombre || d.titulo || d.cliente || d.semana) || '';
+
 // ---------- db readiness (fixes silent failures on early clicks) ----------
 let dbReadyResolve;
 const dbReady = new Promise(res=>{ dbReadyResolve = res; });
@@ -617,34 +709,59 @@ async function colGet(name){
   if(!db) return [];
   try{
     const snap = await db.collection(name).get();
-    return snap.docs.map(d=>({id:d.id, ...d.data()}));
+    return snap.docs.map(d=>{ const data = d.data(); CACHE[name+'/'+d.id] = data; return {id:d.id, ...data}; });
   }catch(e){
     console.error(e);
     if(e && e.code==='permission-denied'){
-      $status.innerHTML = '<span style="color:var(--danger)">La cuenta '+esc(USER_EMAIL)+' no tiene permiso. Agrega ese correo en las reglas de Firestore y pulsa Publicar.</span>';
+      $status.innerHTML = '<div class="conn-card"><b>Sin permiso para ver los datos</b>La cuenta '+esc(USER_EMAIL)+' no está autorizada. En Firebase Console → Firestore → Reglas, agrega este correo y pulsa Publicar.<br><button onclick="location.reload()">Ya lo agregué, reintentar</button></div>';
     }
     return [];
   }
 }
+const MSG_ERR = {
+  'permission-denied':'Tu cuenta no tiene permiso para guardar. Revisa las reglas de Firestore.',
+  'unavailable':'No hay conexión con el servidor.',
+  'deadline-exceeded':'El servidor tardó demasiado.',
+  'resource-exhausted':'Se alcanzó el límite de uso de Firebase por hoy.'
+};
+const conLimite = (p, ms, aviso) => { const t = setTimeout(aviso, ms); return p.finally(()=>clearTimeout(t)); };
 async function docSet(col,id,data){
   const db = await ensureDB();
-  if(!db){ alert('No se pudo guardar: el almacenamiento aún no está listo. Espera un momento y vuelve a intentar.'); throw new Error('db_unavailable'); }
-  showSaving(true);
+  if(!db){ toast('Todavía estoy conectando con la nube. Espera unos segundos e inténtalo de nuevo.', {tipo:'warn'}); throw new Error('db_unavailable'); }
+  trabajando(true);
   try{
-    await db.collection(col).doc(id).set(data);
+    await conLimite(db.collection(col).doc(id).set(data), 7000, ()=>toast('Está tardando más de lo normal. Revisa tu conexión; se guardará en cuanto responda.', {tipo:'warn'}));
+    CACHE[col+'/'+id] = data;
   }catch(e){
     console.error(e);
-    alert('No se pudo guardar el cambio ('+(e&&e.code?e.code:'error')+'). Inténtalo de nuevo.');
+    const code = (e&&e.code||'').replace('firestore/','');
+    toast('No se guardó: '+(MSG_ERR[code] || 'ocurrió un error ('+(code||'desconocido')+').'),
+      {tipo:'err', accion:{txt:'Reintentar', fn:async()=>{ try{ await docSet(col,id,data); toast('Guardado.', {tipo:'ok'}); rePintar(); }catch(_){} }}});
     throw e;
-  }finally{ showSaving(false); }
+  }finally{ trabajando(false); }
 }
-async function docDelete(col,id){
+async function docDelete(col,id,{silencioso=false}={}){
   const db = await ensureDB();
-  if(!db){ alert('No se pudo eliminar: el almacenamiento aún no está listo.'); throw new Error('db_unavailable'); }
-  showSaving(true);
-  try{ await db.collection(col).doc(id).delete(); }
-  catch(e){ console.error(e); alert('No se pudo eliminar ('+(e&&e.code?e.code:'error')+').'); throw e; }
-  finally{ showSaving(false); }
+  if(!db){ toast('Todavía estoy conectando con la nube. Espera unos segundos e inténtalo de nuevo.', {tipo:'warn'}); throw new Error('db_unavailable'); }
+  const previo = CACHE[col+'/'+id];
+  trabajando(true);
+  try{
+    await db.collection(col).doc(id).delete();
+    delete CACHE[col+'/'+id];
+    if(!silencioso){
+      const n = nombreDe(previo);
+      toast('Eliminado'+(n?': '+n:'')+'.', previo ? {tipo:'info', accion:{txt:'Deshacer', fn:async()=>{
+        try{ await docSet(col,id,previo); toast('Recuperado'+(n?': '+n:'')+'.', {tipo:'ok'});
+          if(col==='eventos' && hubData.eventos && !hubData.eventos.some(x=>x.id===id)) hubData.eventos.push({id, ...previo});
+          rePintar(); }catch(_){}
+      }}} : {tipo:'info'});
+    }
+  }catch(e){
+    console.error(e);
+    const code = (e&&e.code||'').replace('firestore/','');
+    toast('No se eliminó: '+(MSG_ERR[code] || 'ocurrió un error ('+(code||'desconocido')+').'), {tipo:'err', accion:{txt:'Reintentar', fn:()=>docDelete(col,id).then(rePintar).catch(()=>{})}});
+    throw e;
+  }finally{ trabajando(false); }
 }
 
 function costoUnitarioInsumo(ins){
@@ -745,7 +862,7 @@ async function initFirebase(){
       conectar();
     });
   }
-  USER_EMAIL = user.email; document.getElementById('tbSync').className='tb-sync ok';
+  USER_EMAIL = user.email; document.getElementById('tbSync').className='tb-sync ok'; pintarConexion();
   $status.innerHTML = 'Sesión: '+esc(user.email)+' · guardado en la nube · <button id="logoutBtn" class="text-xs" style="text-decoration:underline">salir</button>';
   document.getElementById('logoutBtn').onclick = async ()=>{ await A.signOut(auth); location.reload(); };
 
@@ -771,7 +888,7 @@ async function initFirebase(){
     } else {
       DB = await initFirebase();
     }
-  }catch(e){ console.error(e); document.getElementById('tbSync').className='tb-sync err'; $status.textContent = 'No se pudo conectar con Firebase ('+(e && e.code ? e.code : 'error')+').'; }
+  }catch(e){ console.error(e); document.getElementById('tbSync').className='tb-sync err'; $status.innerHTML = '<div class="conn-card"><b>No pude conectar con tu base de datos</b>'+(navigator.onLine?'Puede ser un problema temporal de Firebase':'Parece que no tienes internet')+'. Tus datos están a salvo en la nube; solo no se pueden ver ahora. <span style="color:var(--text-soft)">('+esc(e && e.code ? e.code : 'error')+')</span><br><button onclick="location.reload()">Reintentar</button></div>'; }
   finally{ dbReadyResolve(); applyChartDefaults(); }
 })();
 
@@ -832,7 +949,8 @@ function pintarAgenda(){
       <button class="ag-chip ${agFiltro.tramo==='todos'?'on':''}" onclick="agTramo('todos')">Todo lo próximo</button>
     </div>
     ${Object.keys(grupos).map(k=>`<p class="ag-grupo">${mesTxt(k)}</p>${grupos[k].map(item).join('')}`).join('')
-      || '<div class="card" style="text-align:center;padding:1.5rem"><p class="text-sm" style="color:var(--text-soft)">No hay nada en este rango.</p></div>'}
+      || (evs.length ? vacio('🗓️','Nada en este rango','Prueba con otro filtro o revisa todo lo próximo.','Ver todo lo próximo',"agTramo('todos')")
+                 : vacio('🎓','Aún no tienes cursos ni eventos','Agrega certificados, talleres o eventos para ver cuánto falta y no dejar que venzan.','Agregar el primero',"document.querySelector('#agBox details').open=true;document.getElementById('ag_titulo').focus()"))}
     <details class="card mt-5" style="padding:1rem">
       <summary class="text-sm font-semibold">Agregar curso, certificado o evento</summary>
       <div class="grid sm:grid-cols-2 gap-2 mt-3">
@@ -854,7 +972,6 @@ window.agUsado = async id => {
 };
 window.agBorrar = async id => {
   const e = hubData.eventos.find(x=>x.id===id);
-  if(!confirm('¿Eliminar "'+(e?e.titulo:'')+'"?')) return;
   try{ await docDelete('eventos', id); hubData.eventos = hubData.eventos.filter(x=>x.id!==id); pintarAgenda(); }catch(err){}
 };
 window.agAgregar = async () => {
@@ -1118,7 +1235,7 @@ RENDERERS.insumos = async function(){
             </div>
           </div>
         </div>`;
-      }).join('') || '<p class="text-sm" style="color:var(--text-soft)">Aún no agregas sabores.</p>'}</div>`;
+      }).join('') || vacio('🍫','Aún no hay sabores','Cada sabor necesita sus insumos por tanda y cuántas piezas rinde para calcular costos.','','')}</div>`;
   }
   window.toggleSabor = id => {
     const el = document.getElementById('det_'+id); if(!el) return;
@@ -1323,7 +1440,7 @@ RENDERERS.ventas = async function(){
     }).join('');
     document.getElementById('ventasList').innerHTML = `<table>
       <thead><tr><th></th><th>Fecha</th><th>Cliente</th><th>Tipo</th><th>Estado</th><th>Pago</th><th>Sabores</th><th>Rotación</th><th>Monto</th><th>Coment.</th><th></th></tr></thead>
-      <tbody>${rows || '<tr><td colspan="11" class="text-xs" style="color:var(--text-soft)">Sin ventas registradas.</td></tr>'}</tbody></table>
+      <tbody>${rows || '<tr><td colspan="11" style="white-space:normal;padding:1rem">'+vacio('🧾','Sin ventas que mostrar','Si usaste filtros, quítalos. Si es tu primera vez, registra una venta en segundos.','+ Nueva venta','abrirVentaRapida()')+'</td></tr>'}</tbody></table>
       ${total>ventas.length ? `<div class="text-center mt-2"><button class="btn-soft px-3 py-1 text-xs" onclick="ventasVerTodo()">Ver las ${total} ventas</button></div>` : ''}`;
   }
   function itemRow(vid,i,ix){
@@ -1473,7 +1590,7 @@ RENDERERS.producciones = async function(){
         <tbody>${Object.entries(porCli).map(([c,m])=>`<tr><td>${esc(c)}</td><td>${Object.entries(m).map(([k,v])=>esc(k)+' ×'+v).join(', ')}</td><td>${Object.values(m).reduce((a,b)=>a+b,0)}</td></tr>`).join('')}</tbody></table></div>
         <p class="text-xs mt-1" style="color:var(--text-soft)">Total: ${Object.entries(tot).map(([k,v])=>`${esc(k)}: ${v}`).join(' · ')}</p>
       </details>`;
-    }).join('') || '<p class="text-sm" style="color:var(--text-soft)">Aún no hay producciones guardadas.</p>'}</div>`;
+    }).join('') || vacio('📦','Aún no hay producciones','Planea cuántas piezas hornear en Simulación y guárdala; aquí verás el historial semanal.','Planear producción',"go('simulacion')")}</div>`;
 };
 window.cargarProduccionesIniciales = async()=>{
   const act = await colGet('producciones'); const ids = new Set(act.map(p=>p.id));
@@ -1532,7 +1649,7 @@ RENDERERS.equipo = async function(){
           <input type="number" id="cp_monto_${c.id}" placeholder="Monto">
           <input id="cp_nota_${c.id}" placeholder="Nota">
           <button class="btn-soft px-2 py-1 text-xs" onclick="addPagoCocinero('${c.id}')">Registrar pago</button>
-        </div></div>`; }).join('') || '<p class="text-sm" style="color:var(--text-soft)">Sin horneadores registrados.</p>'}</div>`;
+        </div></div>`; }).join('') || vacio('👩‍🍳','Sin horneadores','Agrega a quien hornea para llevar su inventario y producción.','','')}</div>`;
   }
   window.addCocinero = async()=>{ const n=document.getElementById('c_nombre').value.trim(); if(!n){alert('Escribe un nombre.');return;} try{ await docSet('cocineros', uid(), {nombre:n, pagos:[], insumosEntregados:[], sobrantes:{}}); renderCocineros(); }catch(e){} };
   window.addPagoCocinero = async(id)=>{
@@ -1583,7 +1700,7 @@ RENDERERS.equipo = async function(){
           <input type="date" id="vp_fecha_${v.id}" value="${hoy}">
           <input type="number" id="vp_monto_${v.id}" placeholder="Monto">
           <button class="btn-soft px-2 py-1 text-xs" onclick="addPagoVendedor('${v.id}')">Registrar pago</button>
-        </div></div>`; }).join('') || '<p class="text-sm" style="color:var(--text-soft)">Sin vendedores registrados.</p>'}</div>`;
+        </div></div>`; }).join('') || vacio('🛍️','Sin vendedores','Agrega a quien vende para asignarle piezas y cobrar.','','')}</div>`;
   }
   window.addVendedor = async()=>{ const n=document.getElementById('ve_nombre').value.trim(); if(!n){alert('Escribe un nombre.');return;} try{ await docSet('vendedores', uid(), {nombre:n, entregas:[], pagos:[]}); renderVendedores(); }catch(e){} };
   window.addEntregaVendedor = async(id)=>{
@@ -1762,12 +1879,13 @@ window.delCliente = async(id)=>{ try{ await docDelete('clientes', id); window.go
     if(!items.length && !num(qs.monto)){ alert('Elige al menos un sabor o escribe el monto.'); return; }
     const monto = num(document.getElementById('qs_monto').value);
     try{
-      await docSet('ventas', uid(), {fecha:qs.fecha, fechaProduccion:qs.prod, cliente:(qs.cliente||'').trim(), tipo:qs.tipo, estado:qs.estado,
+      const vid = uid(); const resumen = (items.reduce((a,i)=>a+i.piezas,0)||'')+(items.length?' pzas · ':'')+moneyShort(monto)+((qs.cliente||'').trim()?' · '+qs.cliente.trim():'');
+      await docSet('ventas', vid, {fecha:qs.fecha, fechaProduccion:qs.prod, cliente:(qs.cliente||'').trim(), tipo:qs.tipo, estado:qs.estado,
         metodoPago:qs.pago, sabor:'', cantidad:0, items, monto, comentario:'', pagado:false});
       cerrarQS();
       if(document.getElementById('hubKpis')) refreshHub();
       else if(RENDERERS[window._vistaActual||'']) RENDERERS[window._vistaActual]();
-      showSaving(true); setTimeout(()=>showSaving(false), 600);
+      toast('Venta registrada: '+resumen, {tipo:'ok', accion:{txt:'Deshacer', fn:async()=>{ try{ await docDelete('ventas', vid, {silencioso:true}); toast('Venta anulada.', {tipo:'info'}); rePintar(); }catch(_){} }}});
     }catch(e){}
   };
 })();
