@@ -154,6 +154,24 @@
   .conn-card{ background:var(--card-bg); border:1px solid var(--border-c); border-left:4px solid var(--danger); border-radius:var(--radius); padding:.9rem 1rem; font-size:.85rem; width:100%; }
   .conn-card b{ display:block; margin-bottom:.2rem; }
   .conn-card button{ margin-top:.6rem; min-height:38px; padding:0 1rem; border-radius:10px; background:var(--text-main); color:var(--card-bg); font-weight:600; border:none; }
+
+  /* ---- Venta por voz ---- */
+  .voz{ display:flex; align-items:center; gap:.8rem; background:var(--card-bg); border:1px solid var(--border-c); border-radius:14px; padding:.75rem .85rem; margin-top:.75rem; }
+  .voz-btn{ width:56px; height:56px; border-radius:50%; border:none; background:var(--accent); color:#fff; flex-shrink:0; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(185,119,47,.35); }
+  .voz-btn svg{ width:26px; height:26px; }
+  .voz-btn.on{ background:#b3261e; animation:vozPulse 1.2s infinite; }
+  @keyframes vozPulse{ 0%{ box-shadow:0 0 0 0 rgba(179,38,30,.5);} 70%{ box-shadow:0 0 0 14px rgba(179,38,30,0);} 100%{ box-shadow:0 0 0 0 rgba(179,38,30,0);} }
+  .voz-t{ font-weight:700; font-size:.92rem; }
+  .voz-s{ font-size:.78rem; color:var(--text-soft); margin-top:.15rem; line-height:1.35; }
+  .voz-live{ font-style:italic; color:var(--text-main); }
+  .voz-res{ background:#eef5ec; border:1px solid #cfe3ca; border-radius:12px; padding:.7rem .85rem; margin-top:.6rem; font-size:.82rem; }
+  .voz-res.warn{ background:#fbf0dc; border-color:#efd9ad; }
+  .voz-res q{ font-style:italic; }
+  .voz-res .chips{ display:flex; flex-wrap:wrap; gap:.3rem; margin-top:.45rem; }
+  .voz-res .chips span{ background:#fff; border:1px solid var(--border-c); border-radius:999px; padding:.15rem .55rem; font-size:.74rem; font-weight:600; }
+  .voz-res .acc{ display:flex; gap:1rem; margin-top:.5rem; }
+  .voz-res .acc button{ background:none; border:none; padding:0; font-weight:700; font-size:.8rem; color:var(--accent); min-height:28px; }
+  .voz-edit{ width:100%; min-height:70px; margin-top:.5rem; border:1px solid var(--border-c); border-radius:10px; padding:.5rem .6rem; font-size:16px; background:#fff; }
   /* ---- Cursos y eventos ---- */
   .ag-sum{ display:grid; grid-template-columns:repeat(2,1fr); gap:.6rem; margin-bottom:14px; }
   @media(min-width:640px){ .ag-sum{ grid-template-columns:repeat(4,1fr); } }
@@ -403,7 +421,7 @@ function renderHome(){
       ${qa('abrirVentaRapida()','ventas','Nueva venta','primary')}
       ${qa("go('simulacion')",'simulacion','Planear producción')}
       ${qa("go('inventario')",'inventario','Revisar inventario')}
-      ${qa("go('clientes')",'clientes','Clientes')}
+      ${qa('ventaPorVoz()','mic','Dictar venta')}
     </div>
     <div id="hubKpis" class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5"></div>
     <div class="grid md:grid-cols-5 gap-4 mb-6">
@@ -571,6 +589,7 @@ window.delEvento = async id => {
   }catch(e){}
 };
 
+ICONS.mic = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>`;
 ICONS.inicio = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>`;
 ICONS.mas = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>`;
 const NAV_GRUPOS = [
@@ -1811,6 +1830,124 @@ window.addCliente = async()=>{
 window.delCliente = async(id)=>{ try{ await docDelete('clientes', id); window.go('clientes'); }catch(e){} };
 
 
+// ===== Interpretar una venta dictada (texto libre en español) =====
+function interpretarVenta(texto, {sabores=[], clientes=[]}={}){
+  const N = s => String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  let t = String(texto||'').replace(/(\d)[,.](\d{3})\b/g,'$1$2').replace(/\$/g,' $ ').replace(/[,;:!?¿¡()"“”]/g,' ').replace(/\.(\s|$)/g,' ');
+  const orig = t.split(/\s+/).filter(Boolean);
+  const nt = orig.map(N);
+  const usado = new Array(nt.length).fill(false);
+  const NUM = {un:1,uno:1,una:1,dos:2,tres:3,cuatro:4,cinco:5,seis:6,siete:7,ocho:8,nueve:9,diez:10,once:11,doce:12,trece:13,catorce:14,quince:15,dieciseis:16,diecisiete:17,dieciocho:18,diecinueve:19,veinte:20,veintiuno:21,veintidos:22,veintitres:23,veinticuatro:24,veinticinco:25,treinta:30,cuarenta:40,cincuenta:50,sesenta:60,setenta:70,ochenta:80,noventa:90,cien:100,ciento:100,doscientos:200,trescientos:300,cuatrocientos:400,quinientos:500,seiscientos:600,setecientos:700,ochocientos:800,novecientos:900,docena:12};
+  const esNum = w => /^\d+(\.\d+)?$/.test(w) || NUM[w]!=null || w==='mil' || w==='media';
+  // tramos numéricos (ej. "ciento cincuenta", "treinta y cinco", "media docena", "1500")
+  const spans = [];
+  for(let i=0;i<nt.length;){
+    if(!esNum(nt[i]) || (nt[i]==='media' && nt[i+1]!=='docena')){ i++; continue; }
+    let j=i, val=0, cur=0;
+    while(j<nt.length){
+      const w = nt[j];
+      if(w==='media' && nt[j+1]==='docena'){ cur += 6; j+=2; continue; }
+      if(/^\d+(\.\d+)?$/.test(w)){ cur += Number(w); j++; }
+      else if(w==='mil'){ cur = (cur||1)*1000; val += cur; cur = 0; j++; }
+      else if(NUM[w]!=null){ cur += NUM[w]; j++; }
+      else if(w==='y' && j+1<nt.length && NUM[nt[j+1]]!=null && NUM[nt[j+1]]<10 && j>i){ j++; }
+      else break;
+    }
+    spans.push({i, j, val:val+cur, uso:null}); i = j;
+  }
+  const STOP = new Set(['de','del','con','y','el','la','los','las','sabor','sabores','brownie','brownies','pieza','piezas','pza','pzas','galleta','galletas','un','una']);
+  const RELLENO = new Set(['de','del','brownie','brownies','pieza','piezas','pza','pzas','sabor','el','la','los','las']);
+  const eq = (a,b) => a===b || a===b+'s' || a+'s'===b || a===b+'es' || a+'es'===b;
+  // --- Sabores
+  const items = {};
+  const cands = sabores.map(s=>{ const toks = N(s.nombre).split(/[^a-z0-9]+/).filter(Boolean); let d = toks.filter(w=>!STOP.has(w)); if(!d.length) d = toks; return {nombre:s.nombre, d}; })
+                       .filter(c=>c.d.length).sort((a,b)=>b.d.length-a.d.length);
+  const hallados = [];
+  cands.forEach(c=>{
+    for(let i=0;i<nt.length;i++){
+      if(usado[i] || !eq(nt[i], c.d[0])) continue;
+      let k=1, j=i+1, pos=[i];
+      while(k<c.d.length && j<nt.length && j<=i+c.d.length+2){
+        if(!usado[j] && eq(nt[j], c.d[k])){ pos.push(j); k++; } else if(!STOP.has(nt[j])) break;
+        j++;
+      }
+      if(k<c.d.length) continue;
+      pos.forEach(p=>usado[p]=true);
+      hallados.push({nombre:c.nombre, i, fin:pos[pos.length-1]});
+    }
+  });
+  const dueños = {};
+  cands.forEach(c=>c.d.forEach(w=>{ (dueños[w]=dueños[w]||new Set()).add(c.nombre); }));
+  for(let i=0;i<nt.length;i++){
+    if(usado[i] || STOP.has(nt[i]) || nt[i].length<3) continue;
+    const w = Object.keys(dueños).find(k=>eq(nt[i],k));
+    if(w && dueños[w].size===1){ usado[i]=true; hallados.push({nombre:[...dueños[w]][0], i, fin:i}); }
+  }
+  hallados.sort((a,b)=>a.i-b.i);
+  let limite = 0;
+  hallados.forEach(h=>{
+    let qty = 1;
+    for(let s=spans.length-1; s>=0; s--){
+      const sp = spans[s];
+      if(sp.uso || sp.j>h.i || sp.j<limite || h.i-sp.j>3) continue;
+      let ok = true; for(let x=sp.j; x<h.i; x++) if(!RELLENO.has(nt[x])) ok=false;
+      if(ok){ qty = sp.val; sp.uso='qty'; break; }
+    }
+    items[h.nombre] = (items[h.nombre]||0) + qty;
+    limite = h.fin+1;
+  });
+  // --- Monto (total o precio unitario)
+  let monto = null, unit = null;
+  spans.forEach(sp=>{
+    if(sp.uso) return;
+    const prev = nt[sp.i-1]||'', prev2 = nt[sp.i-2]||'', next = nt[sp.j]||'', next2 = nt[sp.j+1]||'';
+    if(next==='cada' || next==='c/u' || (prev==='a' && prev2==='de') || next2==='cada'&&next==='pesos'){ unit = sp.val; sp.uso='unit'; return; }
+    if(prev==='$' || /^(pesos|peso|varos|baros|bolas|mxn)$/.test(next) || /^(por|total|son|cobre|cobro|pago|pagaron|pagaria|monto|en|fueron|quedo)$/.test(prev)){ monto = sp.val; sp.uso='monto'; }
+  });
+  if(monto==null && unit==null){
+    const sueltos = spans.filter(sp=>!sp.uso && sp.val>=10);
+    if(sueltos.length){ const m = sueltos.reduce((a,b)=>b.val>a.val?b:a); monto = m.val; m.uso='monto'; }
+  }
+  const piezas = Object.values(items).reduce((a,b)=>a+b,0);
+  if(monto==null && unit!=null) monto = unit * Math.max(1, piezas);
+  // --- Pago, estado, fecha, tipo
+  const T = ' '+nt.join(' ')+' ';
+  const pago = /transfer|deposit|spei|tarjeta/.test(T) ? 'transferencia' : /efectivo|cash|en mano/.test(T) ? 'efectivo' : null;
+  const estado = /merma|se cay|se echo a perder|se quem|regal|cortesia/.test(T) ? 'merma'
+               : /pendiente|me debe|me queda a deber|fiad|a cuenta|no (me )?ha pagado|no pago|paga (luego|despues|manana)|al rato/.test(T) ? 'pendiente'
+               : /pagad|ya pago|ya me pago/.test(T) ? 'venta' : null;
+  const fechaOffset = / (antier|anteayer|antes de ayer) /.test(T) ? -2 : / ayer /.test(T) ? -1 : / hoy /.test(T) ? 0 : null;
+  let tipo = / punto de venta | tienda | cafeteria | negocio /.test(T) ? 'puntoVenta' : / vendedor| vendedora/.test(T) ? 'vendedor' : / pedido | encargo | encargado /.test(T) ? 'pedido' : null;
+  // --- Cliente: primero los que ya conoces, luego "a/para <nombre>"
+  let cliente = null;
+  clientes.slice().sort((a,b)=>N(b.nombre).length-N(a.nombre).length).some(c=>{
+    const ct = N(c.nombre).split(/[^a-z0-9]+/).filter(Boolean); if(!ct.length) return false;
+    for(let i=0;i<=nt.length-ct.length;i++){
+      if(ct.every((w,k)=>nt[i+k]===w && !usado[i+k])){ cliente = c.nombre; if(!tipo && c.tipo) tipo = c.tipo; for(let k=0;k<ct.length;k++) usado[i+k]=true; return true; }
+    }
+    return false;
+  });
+  if(!cliente){
+    const CLAVE = new Set(['transferencia','efectivo','pendiente','por','en','de','del','con','y','ayer','hoy','antier','pesos','peso','que','pago','pago','pagado','cuenta','credito','cada','total','son','me','se','le','lo','fue','fueron','punto','venta','vendedor','pedido','encargo','merma','brownie','brownies','piezas','pieza','mi','mis','su','tienda','ya','que','quien','porque','tambien','mas','otra','otro','esta','este','pero','dijo','va','iba']);
+    const TIT = new Set(['la','el','don','dona','senora','senor','sra','sr','maestra','maestro','profe','la profe','tia','tio','vecina','vecino']);
+    for(let i=0;i<nt.length;i++){
+      if(!/^(a|para|cliente|clienta)$/.test(nt[i])) continue;
+      let j=i+1, out=[];
+      while(j<nt.length && out.length<3){
+        const w = nt[j];
+        if(usado[j] || esNum(w) || w==='$' || (CLAVE.has(w) && !TIT.has(w))) break;
+        out.push(orig[j]); j++;
+        if(!TIT.has(w) && out.filter(x=>!TIT.has(N(x))).length>=2) break;
+      }
+      const real = out.filter(x=>!TIT.has(N(x)));
+      if(real.length){ while(out.length && /^(la|el)$/.test(N(out[0]))) out.shift(); cliente = out.map(x=>x.charAt(0).toUpperCase()+x.slice(1)).join(' '); break; }
+    }
+  }
+  return {items, monto, unit, pago, estado, fechaOffset, tipo, cliente, piezas};
+}
+
+window.interpretarVenta = interpretarVenta;
+
 // ---- Botón + (acceso rápido) y venta rápida ----
 (function(){
   const fab = document.createElement('button'); fab.className='fab'; fab.textContent='+'; fab.setAttribute('aria-label','Acceso rápido');
@@ -1821,13 +1958,13 @@ window.delCliente = async(id)=>{ try{ await docDelete('clientes', id); window.go
     if(menu){ cerrarMenu(); return; }
     fab.classList.add('open');
     menu = document.createElement('div'); menu.className='qmenu';
-    menu.innerHTML = `<button data-a="venta">🧾 Nueva venta</button><button data-a="simulacion">🧁 Producción</button><button data-a="insumos">🛒 Insumos</button><button data-a="clientes">👥 Clientes</button>`;
-    menu.onclick = e=>{ const a = e.target.closest('button'); if(!a) return; cerrarMenu(); if(a.dataset.a==='venta') abrirVentaRapida(); else window.go(a.dataset.a); };
+    menu.innerHTML = `<button data-a="voz">🎤 Dictar venta</button><button data-a="venta">🧾 Nueva venta</button><button data-a="simulacion">🧁 Producción</button><button data-a="insumos">🛒 Insumos</button><button data-a="clientes">👥 Clientes</button>`;
+    menu.onclick = e=>{ const a = e.target.closest('button'); if(!a) return; cerrarMenu(); if(a.dataset.a==='venta') abrirVentaRapida(); else if(a.dataset.a==='voz') ventaPorVoz(); else window.go(a.dataset.a); };
     document.body.appendChild(menu);
   };
   let qs = null, qsData = null;
   const dia = off=>{ const d=new Date(); d.setDate(d.getDate()+off); return d.toISOString().slice(0,10); };
-  async function abrirVentaRapida(){
+  async function abrirVentaRapida(opc={}){
     const [sabores, clientes, ventas] = await Promise.all([colGet('sabores'), colGet('clientes'), colGet('ventas')]);
     sabores.sort((a,b)=>String(a.nombre||'').localeCompare(String(b.nombre||''),'es'));
     const hoy = dia(0);
@@ -1838,9 +1975,11 @@ window.delCliente = async(id)=>{ try{ await docDelete('clientes', id); window.go
       const fp = String(v.fechaProduccion||'').slice(0,10); if(fp && fp<=hoy && fp>ultProd) ultProd = fp;
     });
     clientes.forEach(c=>{ const t = freq[c.tipo==='cliente'?'personal':c.tipo] = freq[c.tipo==='cliente'?'personal':c.tipo] || {}; const k=nkey(c.nombre); if(!t[k]) t[k]={nombre:c.nombre,n:0}; });
-    qsData = {sabores, freq};
-    qs = {tipo:'personal', cliente:'', items:{}, pago:'efectivo', estado:'venta', monto:'', montoManual:false, fecha:hoy, prod:ultProd||hoy};
+    const cliLista = []; Object.entries(freq).forEach(([tipo,o])=>Object.values(o).forEach(c=>cliLista.push({nombre:c.nombre, tipo})));
+    qsData = {sabores, freq, clientes:cliLista};
+    qs = {tipo:'personal', cliente:'', items:{}, pago:'efectivo', estado:'venta', monto:'', montoManual:false, fecha:hoy, prod:ultProd||hoy, voz:null};
     pintarQS();
+    if(voz.pendiente){ const t = voz.pendiente; voz.pendiente = ''; aplicarVoz(t); }
   }
   function totalAuto(){
     let t = 0; qsData.sabores.forEach(s=>{ t += num(qs.items[s.nombre])*num(s.precioReal); }); return t;
@@ -1856,6 +1995,7 @@ window.delCliente = async(id)=>{ try{ await docDelete('clientes', id); window.go
     if(!qs.montoManual) qs.monto = totalAuto() || '';
     ov.innerHTML = `<div class="qsheet">
       <div class="flex justify-between items-center"><h3>Nueva venta</h3><button class="qchip" onclick="cerrarQS()">✕</button></div>
+      ${bloqueVoz()}
       <p class="qlbl">Tipo</p><div class="qchips">${chip('tipo','personal','Venta personal')}${chip('tipo','puntoVenta','Punto de venta')}${chip('tipo','vendedor','Vendedor')}${chip('tipo','pedido','Sobre pedido')}</div>
       <p class="qlbl">Cliente</p><div class="qchips">${lista.map(c=>`<button class="qchip ${qs.cliente===c.nombre?'on':''}" onclick="qsCliente(this.dataset.n)" data-n="${esc(c.nombre)}">${esc(c.nombre)}</button>`).join('')}
         <input id="qs_cli" class="qchip" style="min-width:150px" placeholder="Otro (escribir)" value="${lista.some(c=>c.nombre===qs.cliente)?'':esc(qs.cliente)}" oninput="qs.cliente=this.value">
@@ -1870,7 +2010,89 @@ window.delCliente = async(id)=>{ try{ await docDelete('clientes', id); window.go
     </div>`;
     const sh = ov.querySelector('.qsheet'); sh.scrollTop = sc;
   }
-  window.pintarQS = pintarQS; window.abrirVentaRapida = abrirVentaRapida; window.cerrarQS = ()=>{ const o=document.getElementById('qsOverlay'); if(o) o.remove(); qs=null; };
+
+  // ================= Venta por voz =================
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const voz = {rec:null, on:false, texto:'', pendiente:'', editando:false, silencio:null};
+  function bloqueVoz(){
+    const v = qs && qs.voz;
+    const cab = `<div class="voz">
+      <button class="voz-btn ${voz.on?'on':''}" onclick="vozToggle()" aria-label="${voz.on?'Detener':'Dictar venta'}">${voz.on?'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="7" width="10" height="10" rx="2"/></svg>':ICONS.mic}</button>
+      <div style="min-width:0">
+        <p class="voz-t">${voz.on?'Te escucho… toca para terminar':'Dictar venta'}</p>
+        <p class="voz-s" id="vozLive">${voz.on?(voz.texto?`<span class="voz-live">${esc(voz.texto)}</span>`:'Habla con naturalidad.'):(SR?'Ej.: “3 de nutella y 2 de nuez a Juan, 250 transferencia”':'Tu navegador no tiene dictado. Toca aquí y usa el 🎤 del teclado.')}</p>
+      </div></div>`;
+    if(!v && !voz.editando) return cab;
+    if(voz.editando || !v) return cab + `<div class="voz-res warn"><b>Escribe o dicta con el teclado</b>
+      <textarea id="vozTxt" class="voz-edit" placeholder="3 de nutella a Juan, 150 efectivo">${esc(v?v.texto:'')}</textarea>
+      <div class="acc"><button onclick="vozAplicarTexto()">Interpretar</button><button onclick="vozCancelarEdicion()" style="color:var(--text-soft)">Cancelar</button></div></div>`;
+    const r = v.r, chips = [];
+    Object.entries(r.items).forEach(([s,n])=>chips.push(n+' × '+esc(s)));
+    if(r.cliente) chips.push('👤 '+esc(r.cliente));
+    if(r.monto!=null) chips.push(moneyShort(r.monto)+(r.unit?' ('+moneyShort(r.unit)+' c/u)':''));
+    if(r.pago) chips.push(r.pago==='transferencia'?'Transferencia':'Efectivo');
+    if(r.estado && r.estado!=='venta') chips.push(r.estado==='pendiente'?'Pendiente de pago':'Merma');
+    if(r.fechaOffset) chips.push(r.fechaOffset===-1?'Ayer':'Antier');
+    const faltan = [];
+    if(!Object.keys(r.items).length) faltan.push('sabores');
+    if(r.monto==null && !Object.keys(r.items).length) faltan.push('monto');
+    const ok = !faltan.length;
+    return cab + `<div class="voz-res ${ok?'':'warn'}">
+      <b>${ok?'✓ Esto entendí. Revisa abajo y guarda.':'Entendí una parte. Falta: '+faltan.join(' y ')+'.'}</b>
+      <div style="margin-top:.3rem;color:var(--text-soft)">Escuché: <q>${esc(v.texto)}</q></div>
+      ${chips.length?`<div class="chips">${chips.map(c=>`<span>${c}</span>`).join('')}</div>`:''}
+      <div class="acc"><button onclick="vozEditar()">Corregir texto</button><button onclick="vozToggle()">Dictar de nuevo</button></div></div>`;
+  }
+  function aplicarVoz(texto){
+    texto = String(texto||'').trim(); if(!texto) return;
+    if(!qs){ voz.pendiente = texto; return; }
+    const r = interpretarVenta(texto, {sabores:qsData.sabores, clientes:qsData.clientes});
+    if(r.tipo) qs.tipo = r.tipo;
+    if(r.cliente) qs.cliente = r.cliente;
+    if(Object.keys(r.items).length){ qs.items = {...r.items}; qs.montoManual = false; }
+    if(r.pago) qs.pago = r.pago;
+    if(r.estado) qs.estado = r.estado;
+    if(r.fechaOffset!=null) qs.fecha = dia(r.fechaOffset);
+    if(r.monto!=null){ qs.monto = r.monto; qs.montoManual = true; }
+    qs.voz = {texto, r}; voz.editando = false;
+    pintarQS();
+  }
+  function iniciarEscucha(){
+    if(!SR){ voz.editando = true; if(qs) pintarQS(); return; }
+    try{ if(voz.rec) voz.rec.abort(); }catch(_){}
+    const rec = new SR(); voz.rec = rec; voz.texto = ''; voz.on = true;
+    rec.lang = 'es-MX'; rec.interimResults = true; rec.continuous = true; rec.maxAlternatives = 1;
+    let final = '';
+    const reiniciarSilencio = ()=>{ clearTimeout(voz.silencio); voz.silencio = setTimeout(()=>{ try{ rec.stop(); }catch(_){} }, 3500); };
+    rec.onresult = e=>{
+      let interino = '';
+      for(let i=e.resultIndex;i<e.results.length;i++){ const t = e.results[i][0].transcript; if(e.results[i].isFinal) final += ' '+t; else interino += t; }
+      voz.texto = (final+' '+interino).trim();
+      const el = document.getElementById('vozLive'); if(el) el.innerHTML = `<span class="voz-live">${esc(voz.texto)}</span>`;
+      reiniciarSilencio();
+    };
+    rec.onerror = e=>{
+      voz.on = false; clearTimeout(voz.silencio);
+      const m = {'not-allowed':'Permite el micrófono: toca el candado junto a la dirección de la página y activa Micrófono.','service-not-allowed':'Permite el micrófono en los ajustes del navegador.','no-speech':'No escuché nada. Toca el micrófono y vuelve a intentar.','audio-capture':'No encontré micrófono en este dispositivo.','network':'El dictado necesita internet.'}[e.error];
+      if(e.error!=='aborted') toast(m || 'No pude escuchar ('+e.error+').', {tipo:e.error==='no-speech'?'warn':'err', accion:e.error==='no-speech'?{txt:'Reintentar', fn:()=>vozToggle()}:null});
+      if(qs) pintarQS();
+    };
+    rec.onend = ()=>{
+      clearTimeout(voz.silencio);
+      const t = (final || voz.texto).trim();
+      voz.on = false;
+      if(t) aplicarVoz(t); else if(qs) pintarQS();
+    };
+    try{ rec.start(); reiniciarSilencio(); }catch(err){ voz.on = false; toast('No pude iniciar el micrófono.', {tipo:'err'}); }
+    if(qs) pintarQS();
+  }
+  window.vozToggle = ()=>{ if(voz.on){ try{ voz.rec.stop(); }catch(_){} } else iniciarEscucha(); };
+  window.vozEditar = ()=>{ voz.editando = true; pintarQS(); setTimeout(()=>{ const t=document.getElementById('vozTxt'); if(t) t.focus(); }, 30); };
+  window.vozCancelarEdicion = ()=>{ voz.editando = false; pintarQS(); };
+  window.vozAplicarTexto = ()=>{ const t = document.getElementById('vozTxt').value; if(!t.trim()){ toast('Escribe la venta primero.', {tipo:'warn'}); return; } aplicarVoz(t); };
+  // Abre la venta rápida y empieza a escuchar en el mismo toque (los navegadores lo exigen)
+  window.ventaPorVoz = ()=>{ if(SR) iniciarEscucha(); else voz.editando = true; abrirVentaRapida(); };
+  window.pintarQS = pintarQS; window.abrirVentaRapida = abrirVentaRapida; window.cerrarQS = ()=>{ const o=document.getElementById('qsOverlay'); if(o) o.remove(); qs=null; if(voz.on){ try{ voz.rec.abort(); }catch(_){} voz.on=false; } voz.editando=false; voz.pendiente=''; };
   window.qsSet = (k,v)=>{ qs[k]=v; if(k==='tipo') qs.cliente=''; pintarQS(); };
   window.qsCliente = n=>{ qs.cliente = qs.cliente===n? '' : n; pintarQS(); };
   window.qsItem = (s,d)=>{ qs.items[s] = Math.max(0, num(qs.items[s])+d); if(!qs.items[s]) delete qs.items[s]; qs.montoManual=false; pintarQS(); };
