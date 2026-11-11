@@ -48,19 +48,19 @@
 
   /* ---- Simulación: tabla tipo hoja ---- */
   .sim-title{ display:inline-block; border:1px solid var(--text-main); background:var(--card-bg); padding:.25rem 3rem; margin-bottom:.6rem; font-style:italic; font-weight:700; font-family:'Inter',sans-serif; }
-  .sim-scroll{ overflow:auto; max-height:70vh; border:1px solid #6b4a2b; background:#fff; -webkit-overflow-scrolling:touch; }
-  .sim-t{ width:max-content; border-collapse:separate; border-spacing:0; font-family:'Times New Roman',serif; font-size:.78rem; color:#7a1f10; }
+  .sim-scroll{ overflow:auto; max-height:calc(100vh - 250px); min-height:380px; border:1px solid #6b4a2b; background:#fff; -webkit-overflow-scrolling:touch; }
+  .sim-t{ width:max-content; border-collapse:separate; border-spacing:0; font-family:'Times New Roman',serif; font-size:.9rem; color:#7a1f10; }
   .sim-t th, .sim-t td{ border:1px solid #b8a58d; padding:0; }
-  .sim-h{ background:#8b5a2b; color:#fff; font-size:.62rem; text-transform:uppercase; font-weight:700; min-width:92px; max-width:92px; height:44px; padding:2px 4px !important; position:sticky; top:0; z-index:2; position:sticky; vertical-align:middle; }
+  .sim-h{ background:#8b5a2b; color:#fff; font-size:.72rem; text-transform:uppercase; font-weight:700; min-width:112px; max-width:112px; height:54px; padding:2px 4px !important; position:sticky; top:0; z-index:2; position:sticky; vertical-align:middle; }
   .sim-h div{ line-height:1.1; }
-  .sim-corner{ background:#fff; position:sticky; left:0; top:0; z-index:4; min-width:130px; }
-  .sim-catlbl{ top:44px; z-index:4; font-size:.6rem; color:#8b5a2b; font-style:italic; text-align:right; padding-right:4px !important; }
-  .sim-cat{ position:sticky; top:44px; z-index:2; background:#f1e6d6; }
+  .sim-corner{ background:#fff; position:sticky; left:0; top:0; z-index:4; min-width:150px; }
+  .sim-catlbl{ top:54px; z-index:4; font-size:.6rem; color:#8b5a2b; font-style:italic; text-align:right; padding-right:4px !important; }
+  .sim-cat{ position:sticky; top:54px; z-index:2; background:#f1e6d6; }
   .sim-cat select{ width:100%; font-size:.62rem; background:transparent; border:none; padding:2px; color:#5a3a1c; text-align:center; }
-  .sim-r{ background:#b79b80; color:#3b2312; font-size:.68rem; text-align:left; padding:0 6px !important; position:sticky; left:0; z-index:1; min-width:130px; height:24px; white-space:nowrap; font-weight:700; }
+  .sim-r{ background:#b79b80; color:#3b2312; font-size:.78rem; text-align:left; padding:0 8px !important; position:sticky; left:0; z-index:1; min-width:150px; height:32px; white-space:nowrap; font-weight:700; }
   .sim-r span{ margin-right:1.2rem; }
-  .sim-c{ background:#fffdf8; height:24px; }
-  .sim-cell{ width:100%; min-width:90px; height:24px; border:none; background:transparent; text-align:right; padding:0 4px; font:inherit; color:#7a1f10; border-radius:0; }
+  .sim-c{ background:#fffdf8; height:32px; width:112px; min-width:112px; max-width:112px; }
+  .sim-cell{ width:100%; min-width:0; box-sizing:border-box; height:32px; border:none; background:transparent; text-align:right; padding:0 4px; font:inherit; color:#7a1f10; border-radius:0; }
   .sim-cell:focus{ outline:2px solid #8b5a2b; outline-offset:-2px; background:#fff3d6; }
   .sim-blank{ background:#fffdf8; }
   .sim-tot, .sim-grand{ background:#fff; color:#111; font-weight:700; text-align:right; padding:0 6px !important; font-family:'Inter',sans-serif; font-size:.78rem; }
@@ -68,7 +68,9 @@
   .sim-add{ cursor:pointer; background:#f1e6d6 !important; color:#8b5a2b !important; font-size:.9rem !important; min-width:44px; text-align:center !important; }
   .sim-r.sim-add{ text-align:left !important; font-size:.72rem !important; }
   .sim-add:hover{ background:#e3d0b6 !important; }
-  .sim-sum td{ background:#fff; text-align:center; font-family:'Inter',sans-serif; font-size:.75rem; color:#111; height:22px; }
+  .sim-sum td{ background:#fff; text-align:center; font-family:'Inter',sans-serif; font-size:.85rem; color:#111; height:28px; }
+  .sim-wrap-full{ position:fixed; inset:0; z-index:85; background:var(--cream); padding:12px; overflow:auto; }
+  .sim-wrap-full .sim-scroll{ max-height:calc(100vh - 130px); }
   .sim-sumlbl{ background:#fff !important; color:#8b5a2b !important; font-style:italic; }
   .sim-x{ background:none; border:none; font-size:.6rem; opacity:.55; color:inherit; margin-left:2px; }
   .sim-h .sim-x{ position:absolute; top:0; right:1px; color:#fff; }
@@ -80,7 +82,7 @@
   .sim-type b{ display:block; font-size:1.05rem; padding:.2rem 0 0; color:#111; }
   .sim-type small{ display:block; font-size:.65rem; color:#8b5a2b; padding-bottom:.2rem; }
   .sim-type-t div{ background:#2e1a0c; }
-  .sim-cell, .sim-rn{ padding:0 4px !important; height:24px !important; min-height:0 !important; border:none !important; box-shadow:none !important; border-radius:0 !important; background:transparent; font-size:.78rem; }
+  .sim-cell, .sim-rn{ padding:0 6px !important; height:32px !important; min-height:0 !important; border:none !important; box-shadow:none !important; border-radius:0 !important; background:transparent; font-size:.95rem; }
   .sim-rn{ width:100%; min-width:100px; text-align:left; font-weight:700; color:#3b2312; }
   .sim-cat select{ padding:2px !important; min-height:0 !important; border:none !important; box-shadow:none !important; }
   .sim-hsel{ width:100%; font-size:.62rem; background:#fff; color:#3b2312; border:none !important; padding:2px !important; min-height:0 !important; box-shadow:none !important; }
@@ -869,7 +871,7 @@ const PALETTE = ['#2e1a0c','#b9772f','#8a6a46','#d9a85c','#8f4a34','#c7a378'];
 
 // ---------- init db ----------
 // >>> PEGA AQUÍ tu firebaseConfig (Firebase → Configuración del proyecto → Tus apps → Web) <<<
-const APP_VERSION = '11nov-d';
+const APP_VERSION = '11nov-g';
 const firebaseConfig = {
   apiKey: "AIzaSyBUS537-dacXcT87qiELA7Ur72oLFGA_WY",
   authDomain: "d-casa-gestor.firebaseapp.com",
@@ -887,11 +889,12 @@ async function initFirebase(){
   const app = initializeApp(firebaseConfig);
   const auth = A.getAuth(app);
   const fs = F.getFirestore(app);
+  window._fb = {A, auth};
 
   try{ await A.setPersistence(auth, A.browserLocalPersistence); }catch(e){}
   // Si regresamos de un inicio de sesión por redirección, recoger el resultado
   let redirErr = null;
-  try{ await A.getRedirectResult(auth); }catch(e){ redirErr = e; console.error(e); }
+  try{ const rr = await A.getRedirectResult(auth); if(rr){ const cr = A.GoogleAuthProvider.credentialFromResult(rr); if(cr && cr.accessToken){ gsGuardarToken(cr.accessToken); setTimeout(()=>{ pintarSheetsCard(); sheetsSync(true); }, 2500); } } }catch(e){ redirErr = e; console.error(e); }
   let user = await new Promise(res=>{ const un = A.onAuthStateChanged(auth, u=>{ un(); res(u); }); });
   if(!user){
     const MSG = {
@@ -1426,68 +1429,58 @@ function rotacionPor(ventas, keyFn, pesoFn){
   return Object.entries(acc).map(([k,o])=>({k, dias:o.sumPD/(o.sumP||1), n:o.n, min:o.min, max:o.max}));
 }
 
-// ---- Google Sheets (Ventas ⇄ hoja "Ventas App") ----
-const SHEETS_SCRIPT = `// Pega esto en Extensiones → Apps Script de tu Google Sheet (borra lo que haya)
-const TOKEN = 'CAMBIA-ESTA-CLAVE';
-const HOJA = 'Ventas App';
-const COLS = ['id','fecha','fechaProduccion','semProd','semVenta','cliente','tipo','estado','pago','sabores','monto','comentario','pagado','actualizado'];
-const HEAD = ['id','Fecha venta','Fecha producción','Sem. prod','Sem. venta','Cliente','Tipo','Estado','Pago','Sabores','Monto','Comentario','Pagado','actualizado'];
-function hoja_(){
-  const ss = SpreadsheetApp.getActive(); let sh = ss.getSheetByName(HOJA);
-  if(!sh){
-    sh = ss.insertSheet(HOJA);
-    sh.getRange(1,1,1,HEAD.length).setValues([HEAD]).setFontWeight('bold').setBackground('#8b5a2b').setFontColor('#ffffff');
-    sh.setFrozenRows(1); sh.getRange('B:C').setNumberFormat('@'); sh.getRange('N:N').setNumberFormat('0');
-  }
-  return sh;
-}
-function salida_(o){ return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
-function doGet(e){
-  if((e.parameter.token||'') !== TOKEN) return salida_({error:'token'});
-  const sh = hoja_(), n = sh.getLastRow(), rows = [];
-  if(n > 1){
-    sh.getRange(2,1,n-1,COLS.length).getValues().forEach((r,i)=>{
-      if(r.every(c=>c==='')) return;
-      const o = {row:i+2};
-      COLS.forEach((c,k)=>{ let v = r[k]; if(v instanceof Date) v = Utilities.formatDate(v, Session.getScriptTimeZone(), 'yyyy-MM-dd'); o[c] = v; });
-      rows.push(o);
-    });
-  }
-  return salida_({rows:rows});
-}
-function doPost(e){
-  const lock = LockService.getScriptLock(); lock.waitLock(20000);
+// ---- Google Sheets (Ventas ⇄ pestaña "Ventas App"), directo con tu cuenta de Google ----
+const SHEET_ID  = '1GGGKLpJXWOdGyfSeM2IHwkNr-7r2aczOg8JhR3qxoew';   // "Angel´s Dessertz Excel Financiero"
+const SHEET_TAB = 'Ventas App';
+const SHEET_COLS = ['id','fecha','fechaProduccion','semProd','semVenta','cliente','tipo','estado','pago','sabores','monto','comentario','pagado','sync'];
+const SHEET_HEAD = ['id','Fecha venta','Fecha producción','Sem. prod','Sem. venta','Cliente','Tipo','Estado','Pago','Sabores','Monto','Comentario','Pagado','sync (no tocar)'];
+let _sheetsTimer = null, _sheetsBusy = false, _sheetsEstado = '';
+function gsToken(){ try{ const o = JSON.parse(sessionStorage.getItem('gs_tok')||'null'); if(o && o.exp>Date.now()) return o.t; }catch(e){} return null; }
+function gsGuardarToken(t){ try{ sessionStorage.setItem('gs_tok', JSON.stringify({t, exp:Date.now()+50*60000})); }catch(e){} }
+function gsLimpiarToken(){ try{ sessionStorage.removeItem('gs_tok'); }catch(e){} }
+function gsAprovedor(){ const p = new window._fb.A.GoogleAuthProvider(); p.addScope('https://www.googleapis.com/auth/spreadsheets'); p.setCustomParameters({login_hint:USER_EMAIL||'', prompt:'consent'}); return p; }
+window.sheetsReconectar = async()=>{
+  if(!window._fb){ toast('Todavía estoy conectando. Intenta en unos segundos.', {tipo:'warn'}); return; }
+  const {A, auth} = window._fb; const prov = gsAprovedor();
   try{
-    const d = JSON.parse(e.postData.contents);
-    if(d.token !== TOKEN) return salida_({error:'token'});
-    const sh = hoja_();
-    (d.setIds||[]).forEach(s=>sh.getRange(s.row,1).setValue(s.id));
-    const n = sh.getLastRow(), ids = {};
-    if(n > 1) sh.getRange(2,1,n-1,1).getValues().forEach((r,i)=>{ if(r[0] !== '') ids[r[0]] = i+2; });
-    const nuevas = [];
-    (d.rows||[]).forEach(r=>{
-      const arr = COLS.map(c=> r[c] === undefined ? '' : r[c]);
-      if(ids[r.id]) sh.getRange(ids[r.id],1,1,COLS.length).setValues([arr]); else nuevas.push(arr);
-    });
-    if(nuevas.length) sh.getRange(sh.getLastRow()+1,1,nuevas.length,COLS.length).setValues(nuevas);
-    return salida_({ok:true, nuevas:nuevas.length});
-  } finally { lock.release(); }
+    const r = await A.signInWithPopup(auth, prov);
+    const cr = A.GoogleAuthProvider.credentialFromResult(r);
+    if(!cr || !cr.accessToken) throw new Error('sin token');
+    gsGuardarToken(cr.accessToken); await pintarSheetsCard(); await sheetsSync(false);
+  }catch(e){
+    console.error(e);
+    const code = e && e.code || '';
+    if(['auth/popup-blocked','auth/popup-closed-by-user','auth/cancelled-popup-request','auth/operation-not-supported-in-this-environment'].includes(code)){
+      toast('Abriendo Google en esta misma pestaña…', {tipo:'info'});
+      try{ await A.signInWithRedirect(auth, prov); }catch(e2){ toast('No se pudo abrir Google ('+(e2.code||'error')+').', {tipo:'err'}); }
+    }else toast('No se pudo conectar con Google ('+(code||e.message||'error')+').', {tipo:'err'});
+  }
+};
+async function gs(path, opts={}){
+  const tok = gsToken(); if(!tok) throw new Error('AUTH');
+  const r = await fetch('https://sheets.googleapis.com/v4/spreadsheets/'+SHEET_ID+path, {...opts, headers:{'Authorization':'Bearer '+tok, 'Content-Type':'application/json'}});
+  if(r.ok) return r.json();
+  let j = {}; try{ j = await r.json(); }catch(e){}
+  const msg = (j.error && j.error.message) || '';
+  if(r.status===401){ gsLimpiarToken(); throw new Error('AUTH'); }
+  if(r.status===403 && /has not been used|disabled|SERVICE_DISABLED/i.test(msg+JSON.stringify(j))){ const e = new Error('API'); throw e; }
+  if(r.status===403) throw new Error('PERM');
+  if(r.status===404) throw new Error('NOSHEET');
+  throw new Error(msg||('HTTP '+r.status));
 }
-function onEdit(e){
-  const sh = e.range.getSheet();
-  if(sh.getName() !== HOJA || e.range.getRow() < 2 || e.range.getColumn() === COLS.length) return;
-  sh.getRange(e.range.getRow(), COLS.length).setValue(Date.now());
-}`;
-let _sheetsCfg = undefined, _sheetsTimer = null, _sheetsBusy = false, _sheetsEstado = '';
-async function sheetsCfg(recargar){
-  if(_sheetsCfg===undefined || recargar){ const c = (await colGet('config')).find(x=>x.id==='sheets'); _sheetsCfg = c && c.url ? c : null; }
-  return _sheetsCfg;
+const gsRango = (a)=>encodeURIComponent("'"+SHEET_TAB+"'!"+a);
+async function gsAsegurarPestana(){
+  const info = await gs('?fields=sheets.properties.title');
+  if((info.sheets||[]).some(s=>s.properties.title===SHEET_TAB)) return;
+  await gs(':batchUpdate', {method:'POST', body:JSON.stringify({requests:[{addSheet:{properties:{title:SHEET_TAB, gridProperties:{frozenRowCount:1}}}}]})});
+  await gs('/values/'+gsRango('A1:N1')+'?valueInputOption=RAW', {method:'PUT', body:JSON.stringify({values:[SHEET_HEAD]})});
 }
 const itemsTexto = v => ventaItems(v).map(i=>i.sabor+(num(i.piezas)?' x'+num(i.piezas):'')).join('; ');
 function itemsDeTexto(txt){
   return String(txt||'').split(';').map(s=>s.trim()).filter(Boolean).map(s=>{ const m = s.match(/^(.*?)(?:\s*[x×]\s*(\d+))?$/i); return {sabor:(m[1]||s).trim(), piezas:m[2]?+m[2]:0, fechaProduccion:''}; }).filter(i=>i.sabor);
 }
 function fechaIso(s){
+  if(typeof s==='number' && s>20000 && s<80000) return new Date(Date.UTC(1899,11,30)+s*86400000).toISOString().slice(0,10);
   s = String(s==null?'':s).trim(); if(!s) return '';
   if(/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0,10);
   const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/); if(m){ const y = m[3].length===2?'20'+m[3]:m[3]; return y+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0'); }
@@ -1495,110 +1488,83 @@ function fechaIso(s){
 }
 const labelTipo = k => TIPO_LABEL[k] || k || '';
 const tipoDeLabel = l => { l = String(l||'').trim(); const e = Object.entries(TIPO_LABEL).find(([k,v])=>v.toLowerCase()===l.toLowerCase() || k.toLowerCase()===l.toLowerCase()); return e? e[0] : l; };
+const gsSi = x => /^(si|sí|true|1|x|pagado)/i.test(String(x==null?'':x).trim());
 function ventaAFila(v){
   const sp = v.fechaProduccion? isoSemana(String(v.fechaProduccion).slice(0,10)).n : '', sv = v.fecha? isoSemana(String(v.fecha).slice(0,10)).n : '';
   return {id:v.id, fecha:String(v.fecha||'').slice(0,10), fechaProduccion:String(v.fechaProduccion||'').slice(0,10), semProd:sp, semVenta:sv, cliente:v.cliente||'', tipo:labelTipo(v.tipo), estado:v.estado||'',
-    pago:v.metodoPago||'', sabores:itemsTexto(v), monto:num(v.monto), comentario:v.comentario||'', pagado:v.pagado?'SI':'NO', actualizado:v.actualizado||1};
+    pago:v.metodoPago||'', sabores:itemsTexto(v), monto:num(v.monto), comentario:v.comentario||'', pagado:v.pagado?'SI':'NO'};
 }
 function filaAVenta(r, base){
   const items = itemsDeTexto(r.sabores);
   const igual = base && itemsTexto(base)===items.map(i=>i.sabor+(i.piezas?' x'+i.piezas:'')).join('; ');
   const o = {...(base||{}), fecha:fechaIso(r.fecha), fechaProduccion:fechaIso(r.fechaProduccion), cliente:String(r.cliente||'').trim(), tipo:tipoDeLabel(r.tipo)||'personal',
     estado:String(r.estado||'venta').trim().toLowerCase(), metodoPago:String(r.pago||'').trim().toLowerCase(), monto:num(String(r.monto).replace(/[$,]/g,'')), comentario:String(r.comentario||''),
-    pagado:/^(si|sí|true|1|x|pagado)/i.test(String(r.pagado||'').trim()), items: igual? ventaItems(base) : items};
+    pagado:gsSi(r.pagado), items: igual? ventaItems(base) : items};
   if(o.sabor===undefined){ o.sabor=''; o.cantidad=0; }
   delete o.id; return o;
 }
-const claveFila = f => [f.fecha,f.fechaProduccion,f.cliente,f.tipo,f.estado,f.pago,f.sabores,num(f.monto),f.comentario,f.pagado].join('|');
-async function sheetsPost(cfg, cuerpo){
-  const r = await fetch(cfg.url, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({token:cfg.token, ...cuerpo})});
-  const j = await r.json(); if(j.error) throw new Error(j.error); return j;
-}
+const claveFila = f => [fechaIso(f.fecha),fechaIso(f.fechaProduccion),String(f.cliente||'').trim(),tipoDeLabel(f.tipo),String(f.estado||'').toLowerCase(),String(f.pago||'').toLowerCase(),String(f.sabores||'').trim(),num(f.monto),String(f.comentario||''),gsSi(f.pagado)?1:0].join('|');
+function hashStr(s){ let x=5381; for(let i=0;i<s.length;i++) x=((x<<5)+x+s.charCodeAt(i))|0; return String(x>>>0); }
+const filaArray = (f,sync)=>SHEET_COLS.map(c=> c==='sync'? sync : (f[c]===undefined?'':f[c]));
+
 async function sheetsSync(silencioso){
-  const cfg = await sheetsCfg(); if(!cfg || _sheetsBusy) return;
+  if(_sheetsBusy) return;
+  if(!gsToken()){ _sheetsEstado = 'Toca “Conectar con Google” para sincronizar'; pintarSheetsCard(); if(!silencioso) sheetsReconectar(); return; }
   _sheetsBusy = true; _sheetsEstado = 'Sincronizando…'; pintarSheetsCard();
   try{
-    const r = await fetch(cfg.url+(cfg.url.includes('?')?'&':'?')+'token='+encodeURIComponent(cfg.token));
-    const j = await r.json(); if(j.error) throw new Error(j.error==='token'?'La clave no coincide con la del script.':j.error);
-    const hoja = j.rows||[];
+    await gsAsegurarPestana();
+    const data = await gs('/values/'+gsRango('A2:N')+'?valueRenderOption=UNFORMATTED_VALUE');
+    const filas = (data.values||[]).map((arr,i)=>{ const o={row:i+2}; SHEET_COLS.forEach((c,k)=>o[c]=arr[k]===undefined?'':arr[k]); return o; });
     const ventas = await colGet('ventas'); const porId = Object.fromEntries(ventas.map(v=>[v.id,v]));
-    const enHoja = new Set(); const subir = []; const setIds = []; let bajados = 0;
-    const db = await ensureDB();
-    for(const f of hoja){
-      let id = String(f.id||'').trim();
-      if(!id){ id = uid(); setIds.push({row:f.row, id}); }
-      enHoja.add(id);
-      const v = porId[id]; const tsHoja = num(f.actualizado);
-      if(!v){
+    const actualizar = []; const nuevas = []; const vistos = new Set(); let bajados = 0, subidos = 0;
+    for(const f of filas){
+      if(Object.values(f).every((x,i)=>i===0 || x==='' )) continue;
+      let id = String(f.id||'').trim(); const hHoja = hashStr(claveFila(f));
+      if(!id){
         if(!String(f.cliente||'').trim() && !num(f.monto)) continue;
-        await docSet('ventas', id, {...filaAVenta(f,null), pagado:/^(si|sí|true|1|x|pagado)/i.test(String(f.pagado||'')), _ts:tsHoja||Date.now(), _noSync:true}); bajados++;
-        if(!tsHoja || setIds.some(s=>s.id===id)) subir.push(ventaAFila({...filaAVenta(f,null), id, actualizado:Date.now()}));
-        continue;
+        id = uid(); await docSet('ventas', id, {...filaAVenta(f,null), _noSync:true}); bajados++;
+        actualizar.push({row:f.row, vals:filaArray({...ventaAFila({...filaAVenta(f,null), id}), id}, hHoja)}); vistos.add(id); continue;
       }
-      const filaApp = ventaAFila(v);
-      if(claveFila(filaApp) === claveFila({...f, monto:num(f.monto)})) continue;
-      if(tsHoja > num(v.actualizado)){ await docSet('ventas', id, {...filaAVenta(f,v), _ts:tsHoja, _noSync:true}); bajados++; }
-      else subir.push(filaApp);
+      vistos.add(id);
+      const v = porId[id];
+      if(!v){ await docSet('ventas', id, {...filaAVenta(f,null), _noSync:true}); bajados++; continue; }
+      const hApp = hashStr(claveFila(ventaAFila(v))); const ultimo = String(f.sync||'');
+      if(hHoja===hApp){ if(ultimo!==hHoja) actualizar.push({row:f.row, vals:filaArray(ventaAFila(v), hHoja)}); continue; }
+      if(hHoja!==ultimo){ const nv = {...filaAVenta(f,v), id}; await docSet('ventas', id, {...filaAVenta(f,v), _noSync:true}); bajados++; const fa = ventaAFila(nv); actualizar.push({row:f.row, vals:filaArray(fa, hashStr(claveFila(fa)))}); }   // editaste en la hoja
+      else { actualizar.push({row:f.row, vals:filaArray(ventaAFila(v), hApp)}); subidos++; }                                                                  // editaste en la app
     }
-    ventas.forEach(v=>{ if(!enHoja.has(v.id)) subir.push(ventaAFila(v)); });
-    let subidos = 0;
-    for(let i=0;i<Math.max(subir.length,1);i+=150){
-      const lote = subir.slice(i,i+150);
-      if(!lote.length && !setIds.length) break;
-      await sheetsPost(cfg, {rows:lote, setIds: i===0?setIds:[]}); subidos += lote.length;
+    ventas.forEach(v=>{ if(!vistos.has(v.id)){ const fa = ventaAFila(v); nuevas.push(filaArray(fa, hashStr(claveFila(fa)))); subidos++; } });
+    for(let i=0;i<actualizar.length;i+=100){
+      await gs('/values:batchUpdate', {method:'POST', body:JSON.stringify({valueInputOption:'RAW', data:actualizar.slice(i,i+100).map(u=>({range:"'"+SHEET_TAB+"'!A"+u.row+":N"+u.row, values:[u.vals]}))})});
+    }
+    for(let i=0;i<nuevas.length;i+=200){
+      await gs('/values/'+gsRango('A:N')+':append?valueInputOption=RAW&insertDataOption=INSERT_ROWS', {method:'POST', body:JSON.stringify({values:nuevas.slice(i,i+200)})});
     }
     _sheetsEstado = 'Al día · '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})+(subidos||bajados?` · ${subidos} enviadas, ${bajados} recibidas`:'');
     if(!silencioso) toast('Ventas sincronizadas con Google Sheets.', {tipo:'ok'});
     if(bajados && window._vistaActual==='ventas' && typeof window.ventasRecargar==='function') window.ventasRecargar();
   }catch(e){
-    console.error(e); _sheetsEstado = 'Error: '+(e.message==='Failed to fetch' ? 'no se pudo llegar al script (revisa acceso “Cualquier persona” y la URL /exec)' : (e.message||'no se pudo conectar'));
-    if(!silencioso) toast('No se pudo sincronizar: '+(e.message||'revisa la dirección del script')+'.', {tipo:'err'});
+    console.error(e);
+    const M = {AUTH:'La sesión con Google caducó. Pulsa “Conectar con Google”.',
+      API:'Falta activar la API de Google Sheets en tu proyecto (un clic, ver tarjeta).',
+      PERM:'Esta cuenta de Google no tiene permiso de edición en la hoja.',
+      NOSHEET:'No encontré la hoja de cálculo (revisa SHEET_ID en el código).'};
+    _sheetsEstado = M[e.message] || ('Error: '+(e.message||'no se pudo sincronizar'));
+    if(!silencioso || e.message==='API') toast(_sheetsEstado, {tipo:'err'});
   }finally{ _sheetsBusy = false; pintarSheetsCard(); }
 }
-function sheetsProgramar(){
-  if(_sheetsCfg===null) return;
-  clearTimeout(_sheetsTimer); _sheetsTimer = setTimeout(()=>sheetsSync(true), 3000);
-}
-setInterval(()=>{ if(!document.hidden && _sheetsCfg) sheetsSync(true); }, 90000);
+function sheetsProgramar(){ if(!gsToken()) return; clearTimeout(_sheetsTimer); _sheetsTimer = setTimeout(()=>sheetsSync(true), 3000); }
+setInterval(()=>{ if(!document.hidden && gsToken()) sheetsSync(true); }, 90000);
 async function pintarSheetsCard(){
   const el = document.getElementById('sheetsCard'); if(!el) return;
-  const cfg = await sheetsCfg();
-  if(cfg){
-    el.innerHTML = `<div class="card p-3 mb-3 flex items-center justify-between gap-3 flex-wrap"><div class="text-sm"><b>Google Sheets conectado</b><div class="text-xs" style="color:var(--text-soft)">${esc(_sheetsEstado||'Pendiente de sincronizar')} · hoja “Ventas App”</div></div>
-      <div class="flex gap-2"><button class="btn-soft px-3 py-1.5 text-xs" onclick="sheetsSync(false)">Sincronizar ahora</button><button class="text-xs" style="color:var(--danger)" onclick="sheetsDesconectar()">Desconectar</button></div></div>`;
-  }else{
-    el.innerHTML = `<details class="card p-3 mb-3"><summary class="text-sm font-semibold cursor-pointer">Conectar con Google Sheets</summary>
-      <ol class="text-xs mt-2 pl-4" style="list-style:decimal;color:var(--text-soft);display:flex;flex-direction:column;gap:.3rem">
-        <li>Abre tu Google Sheet → <b>Extensiones → Apps Script</b>, borra lo que haya y pega el script.</li>
-        <li>Cambia <code>CAMBIA-ESTA-CLAVE</code> por una clave tuya y guarda.</li>
-        <li><b>Implementar → Nueva implementación → Aplicación web</b>. Ejecutar como: <i>Yo</i>. Quién tiene acceso: <i>Cualquier persona</i>. Autoriza y copia la URL.</li>
-        <li>Pega la URL y la clave aquí abajo.</li></ol>
-      <div class="flex gap-2 mt-2 flex-wrap"><button class="btn-soft px-3 py-1.5 text-xs" onclick="sheetsCopiarScript(this)">Copiar script</button></div>
-      <div class="grid sm:grid-cols-3 gap-2 mt-2 text-sm"><input id="sh_url" placeholder="URL de la aplicación web (https://script.google.com/…)" class="sm:col-span-2"><input id="sh_tok" placeholder="Clave"></div>
-      <button class="btn-primary px-3 py-1.5 text-sm mt-2" onclick="sheetsConectar()">Conectar y sincronizar</button></details>`;
-  }
+  const ok = !!gsToken();
+  const api = 'https://console.developers.google.com/apis/api/sheets.googleapis.com/overview?project='+encodeURIComponent(firebaseConfig.projectId||'');
+  el.innerHTML = `<div class="card p-3 mb-3 flex items-center justify-between gap-3 flex-wrap"><div class="text-sm"><b>Google Sheets</b>
+      <div class="text-xs" style="color:var(--text-soft)">${ok? esc(_sheetsEstado||'Conectado') : esc(_sheetsEstado||'Desconectado')} · pestaña “${SHEET_TAB}”</div>
+      ${/API/.test(_sheetsEstado)?`<div class="text-xs mt-1"><a href="${api}" target="_blank" rel="noopener" style="text-decoration:underline">Activar la API de Google Sheets</a> y vuelve a pulsar Sincronizar.</div>`:''}</div>
+    <div class="flex gap-2">${ok? `<button class="btn-soft px-3 py-1.5 text-xs" onclick="sheetsSync(false)">Sincronizar ahora</button>` : `<button class="btn-primary px-3 py-1.5 text-xs" onclick="sheetsReconectar()">Conectar con Google</button>`}</div></div>`;
 }
 window.sheetsSync = sheetsSync;
-window.sheetsCopiarScript = async btn=>{ try{ await navigator.clipboard.writeText(SHEETS_SCRIPT); toast('Script copiado.', {tipo:'ok'}); }catch(e){ toast('No pude copiar automáticamente. Selecciónalo desde la página de código.', {tipo:'warn'}); } };
-window.sheetsConectar = async()=>{
-  const url = document.getElementById('sh_url').value.trim(), token = document.getElementById('sh_tok').value.trim();
-  if(!/^https:\/\/script\.google\.com\//.test(url) || !token){ toast('Pega la URL de la aplicación web y la clave.', {tipo:'warn'}); return; }
-  try{
-    toast('Probando la conexión…', {tipo:'info'});
-    const r = await fetch(url+(url.includes('?')?'&':'?')+'token='+encodeURIComponent(token));
-    let j; try{ j = await r.json(); }catch(_){ throw new Error('HTML'); }
-    if(j.error) throw new Error(j.error==='token'?'TOKEN':j.error);
-  }catch(e){
-    const m = e.message==='TOKEN' ? 'La clave no coincide con la del script. Revisa que sea idéntica.' :
-      'No pude leer el script. Revisa que la implementación sea “Aplicación web”, con acceso “Cualquier persona”, que la URL termine en /exec y que hayas guardado el script y vuelto a implementar.';
-    toast(m, {tipo:'err'}); const c = document.getElementById('sheetsCard'); if(c) c.insertAdjacentHTML('beforeend','<p class="text-xs" style="color:var(--danger)">'+esc(m)+'</p>'); return;
-  }
-  try{ await docSet('config','sheets',{url, token}); _sheetsCfg = {id:'sheets', url, token}; await pintarSheetsCard(); await sheetsSync(false); }catch(e){}
-};
-window.sheetsDesconectar = async()=>{
-  if(!confirm('¿Desconectar Google Sheets? Las ventas se quedan en la app y en la hoja.')) return;
-  try{ await docDelete('config','sheets'); _sheetsCfg = null; _sheetsEstado=''; pintarSheetsCard(); }catch(e){}
-};
 
 // ---- VENTAS ----
 RENDERERS.ventas = async function(){
@@ -1630,7 +1596,7 @@ RENDERERS.ventas = async function(){
     <datalist id="dl_sabores">${sabores.map(s=>`<option value="${esc(s.nombre)}">`).join('')}</datalist>
     <div id="ventasList" class="card p-3 scrollx"></div>`;
   await renderVentasList();
-  pintarSheetsCard(); sheetsCfg().then(c=>{ if(c) sheetsSync(true); });
+  pintarSheetsCard(); if(gsToken()) sheetsSync(true);
   window.ventasRecargar = ()=>renderVentasList();
 
   async function renderVentasList(){
@@ -1845,14 +1811,18 @@ function simTotales(){
   return {colT,rowT,catT, total:Object.values(colT).reduce((a,b)=>a+b,0)};
 }
 const f2 = n=>(Math.round(n*100)/100).toFixed(2);
+let simPantalla = false;
+window.simFull = ()=>{ simPantalla = !simPantalla; simRender(); };
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && simPantalla){ simPantalla=false; simRender(); } });
 function simRender(){
   const wrap = document.getElementById('simWrap'); if(!wrap) return;
+  wrap.className = simPantalla ? 'sim-wrap-full' : '';
   const sc0 = document.getElementById('simScroll'); const sl = sc0?sc0.scrollLeft:0, st = sc0?sc0.scrollTop:0;
   const sm = Object.fromEntries(simSabores.map(s=>[s.nombre,s]));
   const cats = [...new Set([...SIM_CATS, ...simSabores.map(s=>s.categoria).filter(Boolean)])];
   const T = simTotales();
   wrap.innerHTML = `
-    <div class="sim-title"><span>Brownie</span></div>
+    <div class="flex items-center gap-3 flex-wrap mb-2"><div class="sim-title" style="margin-bottom:0"><span>Brownie</span></div><button class="btn-soft px-3 py-1.5 text-xs" onclick="simFull()">${simPantalla?'✕ Salir de pantalla completa':'⤢ Pantalla completa'}</button>${simPantalla?'<button class="px-3 py-1.5 text-xs" style="background:var(--text-main);color:var(--card-bg);border-radius:.35rem" onclick="simGuardar()">Guardar producción</button>':''}</div>
     <div class="sim-scroll" id="simScroll"><table class="sim-t">
       <thead><tr><th class="sim-corner"></th>
         ${simCols.map(c=>`<th class="sim-h">${isPH(c) ? `<select class="sim-hsel" data-c="${esc(c)}" onchange="simElegirSabor(this)"><option value="">Elegir sabor…</option>${simSaboresLibres().map(n=>`<option>${esc(n)}</option>`).join('')}</select>` : `<div>${esc(c)}</div>`}<button class="sim-x" title="Quitar columna" onclick="simQuitarCol(this.dataset.c)" data-c="${esc(c)}">✕</button></th>`).join('')}
@@ -1930,7 +1900,7 @@ function simAgregarCol(){ simCols.push(SIM_PH+uid()); return true; }
 function simAgregarRow(){ simRows.push(SIM_PH+uid()); return true; }
 window.simHandle = (ev, modo)=>{
   ev.preventDefault(); ev.stopPropagation();
-  const x0=ev.clientX, y0=ev.clientY, paso = modo==='col' ? 92 : 26;
+  const x0=ev.clientX, y0=ev.clientY, paso = modo==='col' ? 112 : 32;
   let agregados=[], movido=false;
   const mover = e=>{
     const d = modo==='col' ? e.clientX-x0 : e.clientY-y0;
