@@ -867,6 +867,7 @@ const PALETTE = ['#2e1a0c','#b9772f','#8a6a46','#d9a85c','#8f4a34','#c7a378'];
 
 // ---------- init db ----------
 // >>> PEGA AQUÍ tu firebaseConfig (Firebase → Configuración del proyecto → Tus apps → Web) <<<
+const APP_VERSION = '11nov-c';
 const firebaseConfig = {
   apiKey: "AIzaSyBUS537-dacXcT87qiELA7Ur72oLFGA_WY",
   authDomain: "d-casa-gestor.firebaseapp.com",
@@ -926,7 +927,7 @@ async function initFirebase(){
     });
   }
   USER_EMAIL = user.email; document.getElementById('tbSync').className='tb-sync ok'; pintarConexion();
-  $status.innerHTML = 'Sesión: '+esc(user.email)+' · guardado en la nube · <button id="logoutBtn" class="text-xs" style="text-decoration:underline">salir</button>';
+  $status.innerHTML = 'Sesión: '+esc(user.email)+' · guardado en la nube · v'+APP_VERSION+' · <button id="logoutBtn" class="text-xs" style="text-decoration:underline">salir</button>';
   document.getElementById('logoutBtn').onclick = async ()=>{ await A.signOut(auth); location.reload(); };
 
   // Adaptador con la misma interfaz que usa el resto de la app
@@ -1548,7 +1549,7 @@ async function sheetsSync(silencioso){
     if(!silencioso) toast('Ventas sincronizadas con Google Sheets.', {tipo:'ok'});
     if(bajados && window._vistaActual==='ventas' && typeof window.ventasRecargar==='function') window.ventasRecargar();
   }catch(e){
-    console.error(e); _sheetsEstado = 'Error: '+(e.message||'no se pudo conectar');
+    console.error(e); _sheetsEstado = 'Error: '+(e.message==='Failed to fetch' ? 'no se pudo llegar al script (revisa acceso “Cualquier persona” y la URL /exec)' : (e.message||'no se pudo conectar'));
     if(!silencioso) toast('No se pudo sincronizar: '+(e.message||'revisa la dirección del script')+'.', {tipo:'err'});
   }finally{ _sheetsBusy = false; pintarSheetsCard(); }
 }
@@ -1580,6 +1581,16 @@ window.sheetsCopiarScript = async btn=>{ try{ await navigator.clipboard.writeTex
 window.sheetsConectar = async()=>{
   const url = document.getElementById('sh_url').value.trim(), token = document.getElementById('sh_tok').value.trim();
   if(!/^https:\/\/script\.google\.com\//.test(url) || !token){ toast('Pega la URL de la aplicación web y la clave.', {tipo:'warn'}); return; }
+  try{
+    toast('Probando la conexión…', {tipo:'info'});
+    const r = await fetch(url+(url.includes('?')?'&':'?')+'token='+encodeURIComponent(token));
+    let j; try{ j = await r.json(); }catch(_){ throw new Error('HTML'); }
+    if(j.error) throw new Error(j.error==='token'?'TOKEN':j.error);
+  }catch(e){
+    const m = e.message==='TOKEN' ? 'La clave no coincide con la del script. Revisa que sea idéntica.' :
+      'No pude leer el script. Revisa que la implementación sea “Aplicación web”, con acceso “Cualquier persona”, que la URL termine en /exec y que hayas guardado el script y vuelto a implementar.';
+    toast(m, {tipo:'err'}); const c = document.getElementById('sheetsCard'); if(c) c.insertAdjacentHTML('beforeend','<p class="text-xs" style="color:var(--danger)">'+esc(m)+'</p>'); return;
+  }
   try{ await docSet('config','sheets',{url, token}); _sheetsCfg = {id:'sheets', url, token}; await pintarSheetsCard(); await sheetsSync(false); }catch(e){}
 };
 window.sheetsDesconectar = async()=>{
@@ -1755,7 +1766,7 @@ function catDefault(s){
   if(s.tipo==='deslactosado') return 'Aceite';
   return 'Mantequilla';
 }
-const catDe = s => (s && s.categoria) || (s? catDefault(s) : 'Otro');
+const catDe = (s, nombre) => (s && s.categoria) || (s? catDefault(s) : (nombre? catDefault({nombre, tipo:/sin lactosa/i.test(nombre)?'deslactosado':'normal'}) : 'Otro'));
 function isoSemana(fechaStr){
   const d = new Date(fechaStr+'T00:00:00'); const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
   const dn = t.getUTCDay()||7; t.setUTCDate(t.getUTCDate()+4-dn);
@@ -1766,8 +1777,8 @@ function lunesDe(fechaStr){
   const d = new Date(fechaStr+'T00:00:00'); const dn = d.getDay()||7; d.setDate(d.getDate()-(dn-1));
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
-function simGuardarBorrador(){ try{ localStorage.setItem('sim_draft', JSON.stringify({simCols,simRows,simVals,simRowTipo,simFecha})); }catch(e){} }
-function simCargarBorrador(){ try{ const d = JSON.parse(localStorage.getItem('sim_draft')||'null'); if(d){ simCols=d.simCols||[]; simRows=d.simRows||[]; simVals=d.simVals||{}; simRowTipo=d.simRowTipo||{}; simFecha=d.simFecha||''; } }catch(e){} }
+function simGuardarBorrador(){ try{ localStorage.setItem('sim_draft_v2', JSON.stringify({simCols,simRows,simVals,simRowTipo,simFecha})); }catch(e){} }
+function simCargarBorrador(){ try{ const d = JSON.parse(localStorage.getItem('sim_draft_v2')||'null'); if(d && Object.keys(d.simVals||{}).length){ simCols=d.simCols||[]; simRows=d.simRows||[]; simVals=d.simVals||{}; simRowTipo=d.simRowTipo||{}; simFecha=d.simFecha||''; } }catch(e){} }
 const kc = (r,c)=>r+'\u0001'+c;
 function evalCelda(txt){
   const t = String(txt||'').replace(/^=/,'').replace(/,/g,'.').trim();
@@ -1778,8 +1789,8 @@ function evalCelda(txt){
 
 
 function simDefaults(){
-  const have = new Set(simSabores.map(s=>s.nombre));
-  simCols = SIM_ORDER.filter(n=>have.has(n));
+  const mapa = Object.fromEntries(simSabores.map(s=>[nkey(s.nombre), s.nombre]));
+  simCols = SIM_ORDER.map(n=>mapa[nkey(n)]||n);
   simRows = SIM_ROWS_DEF.map(r=>r[0]); simRowTipo = Object.fromEntries(SIM_ROWS_DEF); simVals = {};
 }
 function simSiguienteSabor(){
@@ -1828,7 +1839,7 @@ function simTotales(){
   simCols.forEach(c=>colT[c]=0); simRows.forEach(r=>rowT[r]=0);
   simRows.forEach(r=>simCols.forEach(c=>{ const v=num(simVals[kc(r,c)]); if(v>0){ colT[c]+=v; rowT[r]+=v; } }));
   const sm = Object.fromEntries(simSabores.map(s=>[s.nombre,s]));
-  simCols.forEach(c=>{ const cat = catDe(sm[c]); catT[cat]=(catT[cat]||0)+colT[c]; });
+  simCols.forEach(c=>{ const cat = catDe(sm[c], c); catT[cat]=(catT[cat]||0)+colT[c]; });
   return {colT,rowT,catT, total:Object.values(colT).reduce((a,b)=>a+b,0)};
 }
 const f2 = n=>(Math.round(n*100)/100).toFixed(2);
@@ -1845,7 +1856,7 @@ function simRender(){
         ${simCols.map(c=>`<th class="sim-h"><div>${esc(c)}</div><button class="sim-x" title="Quitar columna" onclick="simQuitarCol(this.dataset.c)" data-c="${esc(c)}">✕</button></th>`).join('')}
         <th class="sim-h sim-add sim-add-c" onpointerdown="simHandle(event,'col')" title="Un clic agrega · arrastra a la derecha para agregar varias">＋</th>
         <th class="sim-h sim-tot-h">FECHA</th><th class="sim-h sim-tot-h">${fechaCorta(simFecha)}</th></tr>
-        <tr><th class="sim-corner sim-catlbl">tipo</th>${simCols.map(c=>{ const cur=catDe(sm[c]); return `<th class="sim-cat"><select data-c="${esc(c)}" onchange="simSetCat(this)">${cats.map(k=>`<option ${k===cur?'selected':''}>${esc(k)}</option>`).join('')}<option value="__nuevo">＋ Nuevo…</option></select></th>`; }).join('')}<th class="sim-cat"></th><th class="sim-cat"></th><th class="sim-cat"></th></tr>
+        <tr><th class="sim-corner sim-catlbl">tipo</th>${simCols.map(c=>{ const cur=catDe(sm[c], c); return `<th class="sim-cat"><select data-c="${esc(c)}" onchange="simSetCat(this)">${cats.map(k=>`<option ${k===cur?'selected':''}>${esc(k)}</option>`).join('')}<option value="__nuevo">＋ Nuevo…</option></select></th>`; }).join('')}<th class="sim-cat"></th><th class="sim-cat"></th><th class="sim-cat"></th></tr>
       </thead>
       <tbody>
         ${simRows.map((r,ri)=>`<tr><th class="sim-r">${isPH(r) ? `<input class="sim-rn" list="dl_simcli" placeholder="Destino…" data-r="${esc(r)}" onchange="simNombrarRow(this)">` : `<span>${esc(r)}</span>`}<button class="sim-x" title="Quitar fila" onclick="simQuitarRow(this.dataset.r)" data-r="${esc(r)}">✕</button></th>
@@ -1965,7 +1976,7 @@ window.simGuardar = async()=>{
   if(previa && !confirm('Ya hay una producción guardada de la semana '+w.n+'. ¿Reemplazarla? (el inventario se ajusta con la diferencia)')) return;
   const sm = Object.fromEntries(simSabores.map(s=>[s.nombre,s]));
   const totales = {}, totalesTipo = {}; let piezas = 0;
-  items.forEach(i=>{ totales[i.sabor]=(totales[i.sabor]||0)+i.cantidad; const k=catDe(sm[i.sabor]); totalesTipo[k]=(totalesTipo[k]||0)+i.cantidad; piezas+=i.cantidad; });
+  items.forEach(i=>{ totales[i.sabor]=(totales[i.sabor]||0)+i.cantidad; const k=catDe(sm[i.sabor], i.sabor); totalesTipo[k]=(totalesTipo[k]||0)+i.cantidad; piezas+=i.cantidad; });
   try{
     await docSet('producciones', id, {semana:lunes, semanaNum:w.n, items, totales, totalesTipo, piezas});
     const insumos = await colGet('insumos'); const insMap = Object.fromEntries(insumos.map(i=>[i.id,i]));
