@@ -83,6 +83,8 @@
   .sim-cell, .sim-rn{ padding:0 4px !important; height:24px !important; min-height:0 !important; border:none !important; box-shadow:none !important; border-radius:0 !important; background:transparent; font-size:.78rem; }
   .sim-rn{ width:100%; min-width:100px; text-align:left; font-weight:700; color:#3b2312; }
   .sim-cat select{ padding:2px !important; min-height:0 !important; border:none !important; box-shadow:none !important; }
+  .sim-hsel{ width:100%; font-size:.62rem; background:#fff; color:#3b2312; border:none !important; padding:2px !important; min-height:0 !important; box-shadow:none !important; }
+  .sim-cell:disabled{ background:#f6efe2; cursor:not-allowed; }
   .sim-add-c{ cursor:ew-resize; touch-action:none; user-select:none; }
   .sim-add-r{ cursor:ns-resize; touch-action:none; user-select:none; }
   .sim-pop{ position:fixed; z-index:90; background:var(--card-bg); border:1px solid var(--text-main); border-radius:.6rem; padding:.7rem; max-width:min(420px,92vw); max-height:60vh; overflow:auto; }
@@ -867,7 +869,7 @@ const PALETTE = ['#2e1a0c','#b9772f','#8a6a46','#d9a85c','#8f4a34','#c7a378'];
 
 // ---------- init db ----------
 // >>> PEGA AQUÍ tu firebaseConfig (Firebase → Configuración del proyecto → Tus apps → Web) <<<
-const APP_VERSION = '11nov-c';
+const APP_VERSION = '11nov-d';
 const firebaseConfig = {
   apiKey: "AIzaSyBUS537-dacXcT87qiELA7Ur72oLFGA_WY",
   authDomain: "d-casa-gestor.firebaseapp.com",
@@ -1839,7 +1841,7 @@ function simTotales(){
   simCols.forEach(c=>colT[c]=0); simRows.forEach(r=>rowT[r]=0);
   simRows.forEach(r=>simCols.forEach(c=>{ const v=num(simVals[kc(r,c)]); if(v>0){ colT[c]+=v; rowT[r]+=v; } }));
   const sm = Object.fromEntries(simSabores.map(s=>[s.nombre,s]));
-  simCols.forEach(c=>{ const cat = catDe(sm[c], c); catT[cat]=(catT[cat]||0)+colT[c]; });
+  simCols.filter(c=>!isPH(c)).forEach(c=>{ const cat = catDe(sm[c], c); catT[cat]=(catT[cat]||0)+colT[c]; });
   return {colT,rowT,catT, total:Object.values(colT).reduce((a,b)=>a+b,0)};
 }
 const f2 = n=>(Math.round(n*100)/100).toFixed(2);
@@ -1853,20 +1855,20 @@ function simRender(){
     <div class="sim-title"><span>Brownie</span></div>
     <div class="sim-scroll" id="simScroll"><table class="sim-t">
       <thead><tr><th class="sim-corner"></th>
-        ${simCols.map(c=>`<th class="sim-h"><div>${esc(c)}</div><button class="sim-x" title="Quitar columna" onclick="simQuitarCol(this.dataset.c)" data-c="${esc(c)}">✕</button></th>`).join('')}
+        ${simCols.map(c=>`<th class="sim-h">${isPH(c) ? `<select class="sim-hsel" data-c="${esc(c)}" onchange="simElegirSabor(this)"><option value="">Elegir sabor…</option>${simSaboresLibres().map(n=>`<option>${esc(n)}</option>`).join('')}</select>` : `<div>${esc(c)}</div>`}<button class="sim-x" title="Quitar columna" onclick="simQuitarCol(this.dataset.c)" data-c="${esc(c)}">✕</button></th>`).join('')}
         <th class="sim-h sim-add sim-add-c" onpointerdown="simHandle(event,'col')" title="Un clic agrega · arrastra a la derecha para agregar varias">＋</th>
         <th class="sim-h sim-tot-h">FECHA</th><th class="sim-h sim-tot-h">${fechaCorta(simFecha)}</th></tr>
-        <tr><th class="sim-corner sim-catlbl">tipo</th>${simCols.map(c=>{ const cur=catDe(sm[c], c); return `<th class="sim-cat"><select data-c="${esc(c)}" onchange="simSetCat(this)">${cats.map(k=>`<option ${k===cur?'selected':''}>${esc(k)}</option>`).join('')}<option value="__nuevo">＋ Nuevo…</option></select></th>`; }).join('')}<th class="sim-cat"></th><th class="sim-cat"></th><th class="sim-cat"></th></tr>
+        <tr><th class="sim-corner sim-catlbl">tipo</th>${simCols.map(c=>{ if(isPH(c)) return '<th class="sim-cat"></th>'; const cur=catDe(sm[c], c); return `<th class="sim-cat"><select data-c="${esc(c)}" onchange="simSetCat(this)">${cats.map(k=>`<option ${k===cur?'selected':''}>${esc(k)}</option>`).join('')}<option value="__nuevo">＋ Nuevo…</option></select></th>`; }).join('')}<th class="sim-cat"></th><th class="sim-cat"></th><th class="sim-cat"></th></tr>
       </thead>
       <tbody>
         ${simRows.map((r,ri)=>`<tr><th class="sim-r">${isPH(r) ? `<input class="sim-rn" list="dl_simcli" placeholder="Destino…" data-r="${esc(r)}" onchange="simNombrarRow(this)">` : `<span>${esc(r)}</span>`}<button class="sim-x" title="Quitar fila" onclick="simQuitarRow(this.dataset.r)" data-r="${esc(r)}">✕</button></th>
-          ${simCols.map((c,ci)=>`<td class="sim-c"><input class="sim-cell" inputmode="decimal" data-r="${esc(r)}" data-c="${esc(c)}" data-ri="${ri}" data-ci="${ci}" value="${num(simVals[kc(r,c)])||''}" onfocus="this.select()" oninput="simEdit(this)" onblur="simBlur(this)" onkeydown="simKey(event,this)"></td>`).join('')}
+          ${simCols.map((c,ci)=>`<td class="sim-c"><input class="sim-cell" inputmode="decimal" data-r="${esc(r)}" data-c="${esc(c)}" data-ri="${ri}" data-ci="${ci}" ${isPH(c)?'disabled title="Primero elige el sabor"':''} value="${num(simVals[kc(r,c)])||''}" onfocus="this.select()" oninput="simEdit(this)" onblur="simBlur(this)" onkeydown="simKey(event,this)"></td>`).join('')}
           <td class="sim-c sim-blank"></td><td class="sim-tot" data-rt="${esc(r)}">${T.rowT[r]||0}</td><td class="sim-tot" data-rd="${esc(r)}">${f2((T.rowT[r]||0)/12)}</td></tr>`).join('')}
         <tr><th class="sim-r sim-add sim-add-r" onpointerdown="simHandle(event,'row')" title="Un clic agrega · arrastra hacia abajo para agregar varias">＋ destino</th>${simCols.map(()=>'<td class="sim-c sim-blank"></td>').join('')}<td class="sim-c sim-blank"></td><td class="sim-c sim-blank"></td><td class="sim-c sim-blank"></td></tr>
-        <tr class="sim-sum"><th class="sim-r sim-sumlbl">Piezas</th>${simCols.map(c=>`<td data-ct="${esc(c)}">${T.colT[c]}</td>`).join('')}<td></td><td class="sim-grand" id="simGrand">${T.total}</td><td></td></tr>
-        <tr class="sim-sum"><th class="sim-r sim-sumlbl">Docenas</th>${simCols.map(c=>`<td data-cd="${esc(c)}">${f2(T.colT[c]/12)}</td>`).join('')}<td></td><td class="sim-grand" id="simGrandD">${(T.total/12).toFixed(1)}</td><td></td></tr>
+        <tr class="sim-sum"><th class="sim-r sim-sumlbl">Piezas</th>${simCols.map(c=>`<td data-ct="${esc(c)}">${isPH(c)?'':T.colT[c]}</td>`).join('')}<td></td><td class="sim-grand" id="simGrand">${T.total}</td><td></td></tr>
+        <tr class="sim-sum"><th class="sim-r sim-sumlbl">Docenas</th>${simCols.map(c=>`<td data-cd="${esc(c)}">${isPH(c)?'':f2(T.colT[c]/12)}</td>`).join('')}<td></td><td class="sim-grand" id="simGrandD">${(T.total/12).toFixed(1)}</td><td></td></tr>
       </tbody></table></div>
-    <p class="text-xs mt-1" style="color:var(--text-soft)">Escribe en cada celda (acepta sumas, ej. 6+6). Un clic en ＋ agrega una columna o fila; mantén presionado y arrastra para agregar varias. Enter baja, flechas se mueven.</p>
+    <p class="text-xs mt-1" style="color:var(--text-soft)">Escribe en cada celda (acepta sumas, ej. 6+6). Un clic en ＋ agrega una columna o fila vacía que tú eliges; mantén presionado y arrastra para agregar varias. Enter baja, flechas se mueven.</p>
     <p class="qlbl" style="margin-top:1rem">Totales por tipo (docenas)</p>
     <div class="sim-types" id="simTypes">${simTipos(T)}</div>`;
   const sc = document.getElementById('simScroll'); if(sc){ sc.scrollLeft=sl; sc.scrollTop=st; }
@@ -1880,8 +1882,8 @@ function simRefrescarTotales(){
   const T = simTotales();
   document.querySelectorAll('[data-rt]').forEach(el=>el.textContent = T.rowT[el.dataset.rt]||0);
   document.querySelectorAll('[data-rd]').forEach(el=>el.textContent = f2((T.rowT[el.dataset.rd]||0)/12));
-  document.querySelectorAll('[data-ct]').forEach(el=>el.textContent = T.colT[el.dataset.ct]||0);
-  document.querySelectorAll('[data-cd]').forEach(el=>el.textContent = f2((T.colT[el.dataset.cd]||0)/12));
+  document.querySelectorAll('[data-ct]').forEach(el=>el.textContent = isPH(el.dataset.ct)?'':(T.colT[el.dataset.ct]||0));
+  document.querySelectorAll('[data-cd]').forEach(el=>el.textContent = isPH(el.dataset.cd)?'':f2((T.colT[el.dataset.cd]||0)/12));
   const g=document.getElementById('simGrand'); if(g) g.textContent=T.total;
   const gd=document.getElementById('simGrandD'); if(gd) gd.textContent=(T.total/12).toFixed(1);
   const ty=document.getElementById('simTypes'); if(ty) ty.innerHTML = simTipos(T);
@@ -1905,6 +1907,14 @@ window.simKey = (e,el)=>{
 };
 window.simQuitarCol = c=>{ simCols = simCols.filter(x=>x!==c); simRows.forEach(r=>delete simVals[kc(r,c)]); simGuardarBorrador(); simRender(); };
 window.simQuitarRow = r=>{ simRows = simRows.filter(x=>x!==r); simCols.forEach(c=>delete simVals[kc(r,c)]); delete simRowTipo[r]; simGuardarBorrador(); simRender(); };
+function simSaboresLibres(){
+  return simSabores.map(s=>s.nombre).filter(n=>!simCols.includes(n)).sort((a,b)=>{ const ia=SIM_ORDER.indexOf(a), ib=SIM_ORDER.indexOf(b); return (ia<0?99:ia)-(ib<0?99:ib) || String(a).localeCompare(String(b),'es'); });
+}
+window.simElegirSabor = sel=>{
+  const nuevo = sel.value; if(!nuevo) return;
+  simCols = simCols.map(c=>c===sel.dataset.c?nuevo:c);
+  simGuardarBorrador(); simRender();
+};
 window.simNombrarRow = el=>{
   const viejo = el.dataset.r, nuevo = el.value.trim();
   if(!nuevo) return;
@@ -1916,7 +1926,7 @@ window.simNombrarRow = el=>{
   simGuardarBorrador(); simRender();
 };
 // Agregar con un clic o arrastrando el ＋ (columnas a la derecha, filas hacia abajo)
-function simAgregarCol(){ const n = simSiguienteSabor(); if(!n) return false; simCols.push(n); return true; }
+function simAgregarCol(){ simCols.push(SIM_PH+uid()); return true; }
 function simAgregarRow(){ simRows.push(SIM_PH+uid()); return true; }
 window.simHandle = (ev, modo)=>{
   ev.preventDefault(); ev.stopPropagation();
@@ -1943,8 +1953,7 @@ window.simHandle = (ev, modo)=>{
   const soltar = ()=>{
     document.removeEventListener('pointermove',mover); document.removeEventListener('pointerup',soltar); document.removeEventListener('pointercancel',soltar);
     if(!movido){
-      if(modo==='col'){ if(!simAgregarCol()) toast('Ya agregaste todos los sabores.', {tipo:'info'}); }
-      else simAgregarRow();
+      if(modo==='col') simAgregarCol(); else simAgregarRow();
       simRender(); simDesplazarFin(modo);
     }
     simGuardarBorrador();
@@ -1964,7 +1973,7 @@ window.simSetCat = async sel=>{
 
 window.simGuardar = async()=>{
   const items = [];
-  simRows.filter(r=>!isPH(r)).forEach(r=> simCols.forEach(c=>{
+  simRows.filter(r=>!isPH(r)).forEach(r=> simCols.filter(c=>!isPH(c)).forEach(c=>{
     const cant = num(simVals[kc(r,c)]);
     if(cant>0) items.push({sabor:c, cliente:r, tipo:simRowTipo[r]||'', cantidad:cant});
   }));
