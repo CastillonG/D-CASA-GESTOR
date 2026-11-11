@@ -80,6 +80,11 @@
   .sim-type b{ display:block; font-size:1.05rem; padding:.2rem 0 0; color:#111; }
   .sim-type small{ display:block; font-size:.65rem; color:#8b5a2b; padding-bottom:.2rem; }
   .sim-type-t div{ background:#2e1a0c; }
+  .sim-cell, .sim-rn{ padding:0 4px !important; height:24px !important; min-height:0 !important; border:none !important; box-shadow:none !important; border-radius:0 !important; background:transparent; font-size:.78rem; }
+  .sim-rn{ width:100%; min-width:100px; text-align:left; font-weight:700; color:#3b2312; }
+  .sim-cat select{ padding:2px !important; min-height:0 !important; border:none !important; box-shadow:none !important; }
+  .sim-add-c{ cursor:ew-resize; touch-action:none; user-select:none; }
+  .sim-add-r{ cursor:ns-resize; touch-action:none; user-select:none; }
   .sim-pop{ position:fixed; z-index:90; background:var(--card-bg); border:1px solid var(--text-main); border-radius:.6rem; padding:.7rem; max-width:min(420px,92vw); max-height:60vh; overflow:auto; }
 
   /* ---- Botón + y venta rápida ---- */
@@ -783,10 +788,13 @@ const conLimite = (p, ms, aviso) => { const t = setTimeout(aviso, ms); return p.
 async function docSet(col,id,data){
   const db = await ensureDB();
   if(!db){ toast('Todavía estoy conectando con la nube. Espera unos segundos e inténtalo de nuevo.', {tipo:'warn'}); throw new Error('db_unavailable'); }
+  let noSync = false;
+  if(col==='ventas'){ data = {...data}; noSync = !!data._noSync; delete data._noSync; if(data._ts){ data.actualizado = data._ts; delete data._ts; } else data.actualizado = Date.now(); }
   trabajando(true);
   try{
     await conLimite(db.collection(col).doc(id).set(data), 7000, ()=>toast('Está tardando más de lo normal. Revisa tu conexión; se guardará en cuanto responda.', {tipo:'warn'}));
     CACHE[col+'/'+id] = data;
+    if(col==='ventas' && !noSync) sheetsProgramar();
   }catch(e){
     console.error(e);
     const code = (e&&e.code||'').replace('firestore/','');
@@ -1415,6 +1423,170 @@ function rotacionPor(ventas, keyFn, pesoFn){
   return Object.entries(acc).map(([k,o])=>({k, dias:o.sumPD/(o.sumP||1), n:o.n, min:o.min, max:o.max}));
 }
 
+// ---- Google Sheets (Ventas ⇄ hoja "Ventas App") ----
+const SHEETS_SCRIPT = `// Pega esto en Extensiones → Apps Script de tu Google Sheet (borra lo que haya)
+const TOKEN = 'CAMBIA-ESTA-CLAVE';
+const HOJA = 'Ventas App';
+const COLS = ['id','fecha','fechaProduccion','semProd','semVenta','cliente','tipo','estado','pago','sabores','monto','comentario','pagado','actualizado'];
+const HEAD = ['id','Fecha venta','Fecha producción','Sem. prod','Sem. venta','Cliente','Tipo','Estado','Pago','Sabores','Monto','Comentario','Pagado','actualizado'];
+function hoja_(){
+  const ss = SpreadsheetApp.getActive(); let sh = ss.getSheetByName(HOJA);
+  if(!sh){
+    sh = ss.insertSheet(HOJA);
+    sh.getRange(1,1,1,HEAD.length).setValues([HEAD]).setFontWeight('bold').setBackground('#8b5a2b').setFontColor('#ffffff');
+    sh.setFrozenRows(1); sh.getRange('B:C').setNumberFormat('@'); sh.getRange('N:N').setNumberFormat('0');
+  }
+  return sh;
+}
+function salida_(o){ return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
+function doGet(e){
+  if((e.parameter.token||'') !== TOKEN) return salida_({error:'token'});
+  const sh = hoja_(), n = sh.getLastRow(), rows = [];
+  if(n > 1){
+    sh.getRange(2,1,n-1,COLS.length).getValues().forEach((r,i)=>{
+      if(r.every(c=>c==='')) return;
+      const o = {row:i+2};
+      COLS.forEach((c,k)=>{ let v = r[k]; if(v instanceof Date) v = Utilities.formatDate(v, Session.getScriptTimeZone(), 'yyyy-MM-dd'); o[c] = v; });
+      rows.push(o);
+    });
+  }
+  return salida_({rows:rows});
+}
+function doPost(e){
+  const lock = LockService.getScriptLock(); lock.waitLock(20000);
+  try{
+    const d = JSON.parse(e.postData.contents);
+    if(d.token !== TOKEN) return salida_({error:'token'});
+    const sh = hoja_();
+    (d.setIds||[]).forEach(s=>sh.getRange(s.row,1).setValue(s.id));
+    const n = sh.getLastRow(), ids = {};
+    if(n > 1) sh.getRange(2,1,n-1,1).getValues().forEach((r,i)=>{ if(r[0] !== '') ids[r[0]] = i+2; });
+    const nuevas = [];
+    (d.rows||[]).forEach(r=>{
+      const arr = COLS.map(c=> r[c] === undefined ? '' : r[c]);
+      if(ids[r.id]) sh.getRange(ids[r.id],1,1,COLS.length).setValues([arr]); else nuevas.push(arr);
+    });
+    if(nuevas.length) sh.getRange(sh.getLastRow()+1,1,nuevas.length,COLS.length).setValues(nuevas);
+    return salida_({ok:true, nuevas:nuevas.length});
+  } finally { lock.release(); }
+}
+function onEdit(e){
+  const sh = e.range.getSheet();
+  if(sh.getName() !== HOJA || e.range.getRow() < 2 || e.range.getColumn() === COLS.length) return;
+  sh.getRange(e.range.getRow(), COLS.length).setValue(Date.now());
+}`;
+let _sheetsCfg = undefined, _sheetsTimer = null, _sheetsBusy = false, _sheetsEstado = '';
+async function sheetsCfg(recargar){
+  if(_sheetsCfg===undefined || recargar){ const c = (await colGet('config')).find(x=>x.id==='sheets'); _sheetsCfg = c && c.url ? c : null; }
+  return _sheetsCfg;
+}
+const itemsTexto = v => ventaItems(v).map(i=>i.sabor+(num(i.piezas)?' x'+num(i.piezas):'')).join('; ');
+function itemsDeTexto(txt){
+  return String(txt||'').split(';').map(s=>s.trim()).filter(Boolean).map(s=>{ const m = s.match(/^(.*?)(?:\s*[x×]\s*(\d+))?$/i); return {sabor:(m[1]||s).trim(), piezas:m[2]?+m[2]:0, fechaProduccion:''}; }).filter(i=>i.sabor);
+}
+function fechaIso(s){
+  s = String(s==null?'':s).trim(); if(!s) return '';
+  if(/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0,10);
+  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/); if(m){ const y = m[3].length===2?'20'+m[3]:m[3]; return y+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0'); }
+  return s;
+}
+const labelTipo = k => TIPO_LABEL[k] || k || '';
+const tipoDeLabel = l => { l = String(l||'').trim(); const e = Object.entries(TIPO_LABEL).find(([k,v])=>v.toLowerCase()===l.toLowerCase() || k.toLowerCase()===l.toLowerCase()); return e? e[0] : l; };
+function ventaAFila(v){
+  const sp = v.fechaProduccion? isoSemana(String(v.fechaProduccion).slice(0,10)).n : '', sv = v.fecha? isoSemana(String(v.fecha).slice(0,10)).n : '';
+  return {id:v.id, fecha:String(v.fecha||'').slice(0,10), fechaProduccion:String(v.fechaProduccion||'').slice(0,10), semProd:sp, semVenta:sv, cliente:v.cliente||'', tipo:labelTipo(v.tipo), estado:v.estado||'',
+    pago:v.metodoPago||'', sabores:itemsTexto(v), monto:num(v.monto), comentario:v.comentario||'', pagado:v.pagado?'SI':'NO', actualizado:v.actualizado||1};
+}
+function filaAVenta(r, base){
+  const items = itemsDeTexto(r.sabores);
+  const igual = base && itemsTexto(base)===items.map(i=>i.sabor+(i.piezas?' x'+i.piezas:'')).join('; ');
+  const o = {...(base||{}), fecha:fechaIso(r.fecha), fechaProduccion:fechaIso(r.fechaProduccion), cliente:String(r.cliente||'').trim(), tipo:tipoDeLabel(r.tipo)||'personal',
+    estado:String(r.estado||'venta').trim().toLowerCase(), metodoPago:String(r.pago||'').trim().toLowerCase(), monto:num(String(r.monto).replace(/[$,]/g,'')), comentario:String(r.comentario||''),
+    pagado:/^(si|sí|true|1|x|pagado)/i.test(String(r.pagado||'').trim()), items: igual? ventaItems(base) : items};
+  if(o.sabor===undefined){ o.sabor=''; o.cantidad=0; }
+  delete o.id; return o;
+}
+const claveFila = f => [f.fecha,f.fechaProduccion,f.cliente,f.tipo,f.estado,f.pago,f.sabores,num(f.monto),f.comentario,f.pagado].join('|');
+async function sheetsPost(cfg, cuerpo){
+  const r = await fetch(cfg.url, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({token:cfg.token, ...cuerpo})});
+  const j = await r.json(); if(j.error) throw new Error(j.error); return j;
+}
+async function sheetsSync(silencioso){
+  const cfg = await sheetsCfg(); if(!cfg || _sheetsBusy) return;
+  _sheetsBusy = true; _sheetsEstado = 'Sincronizando…'; pintarSheetsCard();
+  try{
+    const r = await fetch(cfg.url+(cfg.url.includes('?')?'&':'?')+'token='+encodeURIComponent(cfg.token));
+    const j = await r.json(); if(j.error) throw new Error(j.error==='token'?'La clave no coincide con la del script.':j.error);
+    const hoja = j.rows||[];
+    const ventas = await colGet('ventas'); const porId = Object.fromEntries(ventas.map(v=>[v.id,v]));
+    const enHoja = new Set(); const subir = []; const setIds = []; let bajados = 0;
+    const db = await ensureDB();
+    for(const f of hoja){
+      let id = String(f.id||'').trim();
+      if(!id){ id = uid(); setIds.push({row:f.row, id}); }
+      enHoja.add(id);
+      const v = porId[id]; const tsHoja = num(f.actualizado);
+      if(!v){
+        if(!String(f.cliente||'').trim() && !num(f.monto)) continue;
+        await docSet('ventas', id, {...filaAVenta(f,null), pagado:/^(si|sí|true|1|x|pagado)/i.test(String(f.pagado||'')), _ts:tsHoja||Date.now(), _noSync:true}); bajados++;
+        if(!tsHoja || setIds.some(s=>s.id===id)) subir.push(ventaAFila({...filaAVenta(f,null), id, actualizado:Date.now()}));
+        continue;
+      }
+      const filaApp = ventaAFila(v);
+      if(claveFila(filaApp) === claveFila({...f, monto:num(f.monto)})) continue;
+      if(tsHoja > num(v.actualizado)){ await docSet('ventas', id, {...filaAVenta(f,v), _ts:tsHoja, _noSync:true}); bajados++; }
+      else subir.push(filaApp);
+    }
+    ventas.forEach(v=>{ if(!enHoja.has(v.id)) subir.push(ventaAFila(v)); });
+    let subidos = 0;
+    for(let i=0;i<Math.max(subir.length,1);i+=150){
+      const lote = subir.slice(i,i+150);
+      if(!lote.length && !setIds.length) break;
+      await sheetsPost(cfg, {rows:lote, setIds: i===0?setIds:[]}); subidos += lote.length;
+    }
+    _sheetsEstado = 'Al día · '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})+(subidos||bajados?` · ${subidos} enviadas, ${bajados} recibidas`:'');
+    if(!silencioso) toast('Ventas sincronizadas con Google Sheets.', {tipo:'ok'});
+    if(bajados && window._vistaActual==='ventas' && typeof window.ventasRecargar==='function') window.ventasRecargar();
+  }catch(e){
+    console.error(e); _sheetsEstado = 'Error: '+(e.message||'no se pudo conectar');
+    if(!silencioso) toast('No se pudo sincronizar: '+(e.message||'revisa la dirección del script')+'.', {tipo:'err'});
+  }finally{ _sheetsBusy = false; pintarSheetsCard(); }
+}
+function sheetsProgramar(){
+  if(_sheetsCfg===null) return;
+  clearTimeout(_sheetsTimer); _sheetsTimer = setTimeout(()=>sheetsSync(true), 3000);
+}
+setInterval(()=>{ if(!document.hidden && _sheetsCfg) sheetsSync(true); }, 90000);
+async function pintarSheetsCard(){
+  const el = document.getElementById('sheetsCard'); if(!el) return;
+  const cfg = await sheetsCfg();
+  if(cfg){
+    el.innerHTML = `<div class="card p-3 mb-3 flex items-center justify-between gap-3 flex-wrap"><div class="text-sm"><b>Google Sheets conectado</b><div class="text-xs" style="color:var(--text-soft)">${esc(_sheetsEstado||'Pendiente de sincronizar')} · hoja “Ventas App”</div></div>
+      <div class="flex gap-2"><button class="btn-soft px-3 py-1.5 text-xs" onclick="sheetsSync(false)">Sincronizar ahora</button><button class="text-xs" style="color:var(--danger)" onclick="sheetsDesconectar()">Desconectar</button></div></div>`;
+  }else{
+    el.innerHTML = `<details class="card p-3 mb-3"><summary class="text-sm font-semibold cursor-pointer">Conectar con Google Sheets</summary>
+      <ol class="text-xs mt-2 pl-4" style="list-style:decimal;color:var(--text-soft);display:flex;flex-direction:column;gap:.3rem">
+        <li>Abre tu Google Sheet → <b>Extensiones → Apps Script</b>, borra lo que haya y pega el script.</li>
+        <li>Cambia <code>CAMBIA-ESTA-CLAVE</code> por una clave tuya y guarda.</li>
+        <li><b>Implementar → Nueva implementación → Aplicación web</b>. Ejecutar como: <i>Yo</i>. Quién tiene acceso: <i>Cualquier persona</i>. Autoriza y copia la URL.</li>
+        <li>Pega la URL y la clave aquí abajo.</li></ol>
+      <div class="flex gap-2 mt-2 flex-wrap"><button class="btn-soft px-3 py-1.5 text-xs" onclick="sheetsCopiarScript(this)">Copiar script</button></div>
+      <div class="grid sm:grid-cols-3 gap-2 mt-2 text-sm"><input id="sh_url" placeholder="URL de la aplicación web (https://script.google.com/…)" class="sm:col-span-2"><input id="sh_tok" placeholder="Clave"></div>
+      <button class="btn-primary px-3 py-1.5 text-sm mt-2" onclick="sheetsConectar()">Conectar y sincronizar</button></details>`;
+  }
+}
+window.sheetsSync = sheetsSync;
+window.sheetsCopiarScript = async btn=>{ try{ await navigator.clipboard.writeText(SHEETS_SCRIPT); toast('Script copiado.', {tipo:'ok'}); }catch(e){ toast('No pude copiar automáticamente. Selecciónalo desde la página de código.', {tipo:'warn'}); } };
+window.sheetsConectar = async()=>{
+  const url = document.getElementById('sh_url').value.trim(), token = document.getElementById('sh_tok').value.trim();
+  if(!/^https:\/\/script\.google\.com\//.test(url) || !token){ toast('Pega la URL de la aplicación web y la clave.', {tipo:'warn'}); return; }
+  try{ await docSet('config','sheets',{url, token}); _sheetsCfg = {id:'sheets', url, token}; await pintarSheetsCard(); await sheetsSync(false); }catch(e){}
+};
+window.sheetsDesconectar = async()=>{
+  if(!confirm('¿Desconectar Google Sheets? Las ventas se quedan en la app y en la hoja.')) return;
+  try{ await docDelete('config','sheets'); _sheetsCfg = null; _sheetsEstado=''; pintarSheetsCard(); }catch(e){}
+};
+
 // ---- VENTAS ----
 RENDERERS.ventas = async function(){
   const [sabores] = await Promise.all([colGet('sabores')]);
@@ -1423,6 +1595,7 @@ RENDERERS.ventas = async function(){
   const hoy = new Date().toISOString().slice(0,10);
   $view.innerHTML = `<h2 class="text-lg font-bold mb-3">Ventas</h2>
     <div id="ventasCarga"></div>
+    <div id="sheetsCard"></div>
     <div class="card p-3 mb-3 grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
       <label class="text-xs" style="color:var(--text-soft)">Fecha de venta<input id="v_fecha" type="date" value="${hoy}"></label>
       <label class="text-xs" style="color:var(--text-soft)">Fecha de producción<input id="v_prod" type="date" value="${hoy}"></label>
@@ -1444,6 +1617,8 @@ RENDERERS.ventas = async function(){
     <datalist id="dl_sabores">${sabores.map(s=>`<option value="${esc(s.nombre)}">`).join('')}</datalist>
     <div id="ventasList" class="card p-3 scrollx"></div>`;
   await renderVentasList();
+  pintarSheetsCard(); sheetsCfg().then(c=>{ if(c) sheetsSync(true); });
+  window.ventasRecargar = ()=>renderVentasList();
 
   async function renderVentasList(){
     const todas = (await colGet('ventas')).sort((a,b)=> (b.fecha||'').localeCompare(a.fecha||''));
@@ -1563,6 +1738,10 @@ RENDERERS.ventas = async function(){
 };
 
 // ---- SIMULACIÓN (matriz tipo hoja de cálculo) ----
+const SIM_PH='\u2022';
+const isPH = n=>String(n).startsWith(SIM_PH);
+const SIM_ORDER=['Brownie Clasico','Brownie Oreo','Brownie Ferrero','Brownie M&M','Brownie de Limon','Brownie Kinder Bueno','Brookie','Brownie de Mazapan','Brownie de Muerto','Brownie Oreo Sin Lactosa','Brownie M&M Sin Lactosa','Cheescake Brownie','Brownie Smoars Sin Lactosa','Carrot Sandwich','Brookie Sin Lactosa','Brownie Reeses'];
+const SIM_ROWS_DEF=[['Venta propia','personal'],["Papeleria D'Colores",'puntoVenta'],['ITH','puntoVenta'],['Unison','puntoVenta'],['Carniceria','puntoVenta'],['Cafe Escondido','puntoVenta'],['Mini Brownie','puntoVenta'],['Papeleria Colosio','puntoVenta'],['Venta Estudiante','personal']];
 let simCols = []; let simRows = []; let simVals = {}; let simRowTipo = {}; let simSabores = []; let simClientes = []; let simFecha = '';
 const SIM_CATS = ['Mantequilla','Aceite','Sin lactosa','Brookie','Muerto','Mazapán','Cheesecake','Carrot Sandwich','Galleta'];
 function catDefault(s){
@@ -1597,26 +1776,40 @@ function evalCelda(txt){
   try{ const v = Function('"use strict";return ('+t+')')(); return isFinite(v)&&v>0 ? Math.round(v*100)/100 : 0; }catch(e){ return 0; }
 }
 
+
+function simDefaults(){
+  const have = new Set(simSabores.map(s=>s.nombre));
+  simCols = SIM_ORDER.filter(n=>have.has(n));
+  simRows = SIM_ROWS_DEF.map(r=>r[0]); simRowTipo = Object.fromEntries(SIM_ROWS_DEF); simVals = {};
+}
+function simSiguienteSabor(){
+  const libres = simSabores.filter(s=>!simCols.includes(s.nombre));
+  libres.sort((a,b)=>{ const ia=SIM_ORDER.indexOf(a.nombre), ib=SIM_ORDER.indexOf(b.nombre); return (ia<0?99:ia)-(ib<0?99:ib) || String(a.nombre).localeCompare(String(b.nombre),'es'); });
+  return libres[0] ? libres[0].nombre : null;
+}
+const fechaCorta = f=>{ const d=new Date(f+'T00:00:00'); return isNaN(d)?'':d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear(); };
+
 RENDERERS.simulacion = async function(){
   [simSabores, simClientes] = await Promise.all([colGet('sabores'), colGet('clientes')]);
   const producciones = (await colGet('producciones')).sort((a,b)=>(b.semana||'').localeCompare(a.semana||''));
   window._simProd = producciones;
-  if(!simCols.length && !simRows.length) simCargarBorrador();
+  if(!simCols.length && !simRows.length){ simCargarBorrador(); if(!simCols.length && !simRows.length) simDefaults(); }
   if(!simFecha) simFecha = new Date().toISOString().slice(0,10);
   $view.innerHTML = `<h2 class="text-lg font-bold mb-3">Simulación de producción</h2>
     <div class="flex gap-2 mb-3 flex-wrap items-center text-sm">
-      <label class="text-xs" style="color:var(--text-soft)">Semana de producción <input id="sim_semana" type="date" value="${simFecha}" onchange="simFecha=this.value;simGuardarBorrador();simPintarEtiqueta()"></label>
+      <label class="text-xs" style="color:var(--text-soft)">Fecha <input id="sim_semana" type="date" value="${simFecha}" style="width:auto" onchange="simFecha=this.value;simGuardarBorrador();simPintarEtiqueta();simRender()"></label>
       <span id="sim_sem_lbl" class="text-xs" style="color:var(--text-soft)"></span>
-      <select id="sim_cargar" onchange="simCargarSemana(this.value)"><option value="">Cargar una semana guardada…</option>${producciones.map(p=>`<option value="${p.id}">Semana ${p.semanaNum||''} (${esc(p.semana||'')})</option>`).join('')}</select>
-      <button class="btn-soft px-2 py-1 text-xs" onclick="simLimpiar()">Limpiar tabla</button>
+      <select id="sim_cargar" style="width:auto" onchange="simCargarSemana(this.value)"><option value="">Cargar una semana guardada…</option>${producciones.map(p=>`<option value="${p.id}">Semana ${p.semanaNum||''} (${esc(p.semana||'')})</option>`).join('')}</select>
+      <button class="btn-soft px-2 py-1 text-xs" onclick="simLimpiar()">Vaciar cantidades</button>
       <button class="btn-primary px-3 py-1.5" onclick="simGuardar()">Guardar producción</button>
     </div>
+    <datalist id="dl_simcli">${simClientes.map(c=>`<option value="${esc(c.nombre)}">`).join('')}</datalist>
     <div id="simWrap"></div>`;
   simPintarEtiqueta();
   simRender();
 };
 window.simPintarEtiqueta = ()=>{ const el=document.getElementById('sim_sem_lbl'); if(el&&simFecha){ const w=isoSemana(simFecha); el.textContent='Semana '+w.n+' · lunes '+lunesDe(simFecha); } };
-window.simLimpiar = ()=>{ if((simCols.length||simRows.length) && !confirm('¿Vaciar la tabla?')) return; simCols=[]; simRows=[]; simVals={}; simRowTipo={}; simGuardarBorrador(); simRender(); };
+window.simLimpiar = ()=>{ simVals={}; simGuardarBorrador(); simRender(); };
 window.simCargarSemana = (id)=>{
   const p = (window._simProd||[]).find(x=>x.id===id); if(!p) return;
   if((simCols.length||simRows.length) && !confirm('Esto reemplaza lo que hay en la tabla. ¿Continuar?')){ document.getElementById('sim_cargar').value=''; return; }
@@ -1629,6 +1822,7 @@ window.simCargarSemana = (id)=>{
   simFecha = p.semana || simFecha; document.getElementById('sim_semana').value = simFecha; simPintarEtiqueta();
   simGuardarBorrador(); simRender();
 };
+
 function simTotales(){
   const colT = {}, rowT = {}, catT = {};
   simCols.forEach(c=>colT[c]=0); simRows.forEach(r=>rowT[r]=0);
@@ -1640,6 +1834,7 @@ function simTotales(){
 const f2 = n=>(Math.round(n*100)/100).toFixed(2);
 function simRender(){
   const wrap = document.getElementById('simWrap'); if(!wrap) return;
+  const sc0 = document.getElementById('simScroll'); const sl = sc0?sc0.scrollLeft:0, st = sc0?sc0.scrollTop:0;
   const sm = Object.fromEntries(simSabores.map(s=>[s.nombre,s]));
   const cats = [...new Set([...SIM_CATS, ...simSabores.map(s=>s.categoria).filter(Boolean)])];
   const T = simTotales();
@@ -1648,30 +1843,32 @@ function simRender(){
     <div class="sim-scroll" id="simScroll"><table class="sim-t">
       <thead><tr><th class="sim-corner"></th>
         ${simCols.map(c=>`<th class="sim-h"><div>${esc(c)}</div><button class="sim-x" title="Quitar columna" onclick="simQuitarCol(this.dataset.c)" data-c="${esc(c)}">✕</button></th>`).join('')}
-        <th class="sim-h sim-add" onclick="simPicker(event,'col')" title="Agregar sabor">＋</th>
-        <th class="sim-h sim-tot-h">TOTAL</th></tr>
-        <tr><th class="sim-corner sim-catlbl">tipo</th>${simCols.map(c=>{ const cur=catDe(sm[c]); return `<th class="sim-cat"><select data-c="${esc(c)}" onchange="simSetCat(this)">${cats.map(k=>`<option ${k===cur?'selected':''}>${esc(k)}</option>`).join('')}<option value="__nuevo">＋ Nuevo…</option></select></th>`; }).join('')}<th class="sim-cat"></th><th class="sim-cat"></th></tr>
+        <th class="sim-h sim-add sim-add-c" onpointerdown="simHandle(event,'col')" title="Un clic agrega · arrastra a la derecha para agregar varias">＋</th>
+        <th class="sim-h sim-tot-h">FECHA</th><th class="sim-h sim-tot-h">${fechaCorta(simFecha)}</th></tr>
+        <tr><th class="sim-corner sim-catlbl">tipo</th>${simCols.map(c=>{ const cur=catDe(sm[c]); return `<th class="sim-cat"><select data-c="${esc(c)}" onchange="simSetCat(this)">${cats.map(k=>`<option ${k===cur?'selected':''}>${esc(k)}</option>`).join('')}<option value="__nuevo">＋ Nuevo…</option></select></th>`; }).join('')}<th class="sim-cat"></th><th class="sim-cat"></th><th class="sim-cat"></th></tr>
       </thead>
       <tbody>
-        ${simRows.map((r,ri)=>`<tr><th class="sim-r"><span>${esc(r)}</span><button class="sim-x" title="Quitar fila" onclick="simQuitarRow(this.dataset.r)" data-r="${esc(r)}">✕</button></th>
+        ${simRows.map((r,ri)=>`<tr><th class="sim-r">${isPH(r) ? `<input class="sim-rn" list="dl_simcli" placeholder="Destino…" data-r="${esc(r)}" onchange="simNombrarRow(this)">` : `<span>${esc(r)}</span>`}<button class="sim-x" title="Quitar fila" onclick="simQuitarRow(this.dataset.r)" data-r="${esc(r)}">✕</button></th>
           ${simCols.map((c,ci)=>`<td class="sim-c"><input class="sim-cell" inputmode="decimal" data-r="${esc(r)}" data-c="${esc(c)}" data-ri="${ri}" data-ci="${ci}" value="${num(simVals[kc(r,c)])||''}" onfocus="this.select()" oninput="simEdit(this)" onblur="simBlur(this)" onkeydown="simKey(event,this)"></td>`).join('')}
-          <td class="sim-c sim-blank"></td><td class="sim-tot" data-rt="${esc(r)}">${T.rowT[r]||0}</td></tr>`).join('')}
-        <tr><th class="sim-r sim-add" onclick="simPicker(event,'row')">＋ destino</th>${simCols.map(()=>'<td class="sim-c sim-blank"></td>').join('')}<td class="sim-c sim-blank"></td><td class="sim-c sim-blank"></td></tr>
-        <tr class="sim-sum"><th class="sim-r sim-sumlbl">Piezas</th>${simCols.map(c=>`<td data-ct="${esc(c)}">${T.colT[c]}</td>`).join('')}<td></td><td class="sim-grand" id="simGrand">${T.total}</td></tr>
-        <tr class="sim-sum"><th class="sim-r sim-sumlbl">Docenas</th>${simCols.map(c=>`<td data-cd="${esc(c)}">${f2(T.colT[c]/12)}</td>`).join('')}<td></td><td class="sim-grand" id="simGrandD">${(T.total/12).toFixed(1)}</td></tr>
+          <td class="sim-c sim-blank"></td><td class="sim-tot" data-rt="${esc(r)}">${T.rowT[r]||0}</td><td class="sim-tot" data-rd="${esc(r)}">${f2((T.rowT[r]||0)/12)}</td></tr>`).join('')}
+        <tr><th class="sim-r sim-add sim-add-r" onpointerdown="simHandle(event,'row')" title="Un clic agrega · arrastra hacia abajo para agregar varias">＋ destino</th>${simCols.map(()=>'<td class="sim-c sim-blank"></td>').join('')}<td class="sim-c sim-blank"></td><td class="sim-c sim-blank"></td><td class="sim-c sim-blank"></td></tr>
+        <tr class="sim-sum"><th class="sim-r sim-sumlbl">Piezas</th>${simCols.map(c=>`<td data-ct="${esc(c)}">${T.colT[c]}</td>`).join('')}<td></td><td class="sim-grand" id="simGrand">${T.total}</td><td></td></tr>
+        <tr class="sim-sum"><th class="sim-r sim-sumlbl">Docenas</th>${simCols.map(c=>`<td data-cd="${esc(c)}">${f2(T.colT[c]/12)}</td>`).join('')}<td></td><td class="sim-grand" id="simGrandD">${(T.total/12).toFixed(1)}</td><td></td></tr>
       </tbody></table></div>
-    <p class="text-xs mt-1" style="color:var(--text-soft)">Escribe en cada celda (acepta sumas, ej. 6+6). Usa ＋ a la derecha para sabores y ＋ abajo para destinos. Enter baja, flechas se mueven.</p>
+    <p class="text-xs mt-1" style="color:var(--text-soft)">Escribe en cada celda (acepta sumas, ej. 6+6). Un clic en ＋ agrega una columna o fila; mantén presionado y arrastra para agregar varias. Enter baja, flechas se mueven.</p>
     <p class="qlbl" style="margin-top:1rem">Totales por tipo (docenas)</p>
     <div class="sim-types" id="simTypes">${simTipos(T)}</div>`;
+  const sc = document.getElementById('simScroll'); if(sc){ sc.scrollLeft=sl; sc.scrollTop=st; }
 }
 function simTipos(T){
-  const e = Object.entries(T.catT).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
-  if(!e.length) return '<span class="text-xs" style="color:var(--text-soft)">Agrega cantidades para ver los totales por tipo.</span>';
+  const e = Object.entries(T.catT);
+  if(!e.length) return '';
   return e.map(([k,v])=>`<div class="sim-type"><div>${esc(k)}</div><b>${f2(v/12)}</b><small>${v} pzs</small></div>`).join('') + `<div class="sim-type sim-type-t"><div>Total</div><b>${f2(T.total/12)}</b><small>${T.total} pzs</small></div>`;
 }
 function simRefrescarTotales(){
   const T = simTotales();
   document.querySelectorAll('[data-rt]').forEach(el=>el.textContent = T.rowT[el.dataset.rt]||0);
+  document.querySelectorAll('[data-rd]').forEach(el=>el.textContent = f2((T.rowT[el.dataset.rd]||0)/12));
   document.querySelectorAll('[data-ct]').forEach(el=>el.textContent = T.colT[el.dataset.ct]||0);
   document.querySelectorAll('[data-cd]').forEach(el=>el.textContent = f2((T.colT[el.dataset.cd]||0)/12));
   const g=document.getElementById('simGrand'); if(g) g.textContent=T.total;
@@ -1697,6 +1894,54 @@ window.simKey = (e,el)=>{
 };
 window.simQuitarCol = c=>{ simCols = simCols.filter(x=>x!==c); simRows.forEach(r=>delete simVals[kc(r,c)]); simGuardarBorrador(); simRender(); };
 window.simQuitarRow = r=>{ simRows = simRows.filter(x=>x!==r); simCols.forEach(c=>delete simVals[kc(r,c)]); delete simRowTipo[r]; simGuardarBorrador(); simRender(); };
+window.simNombrarRow = el=>{
+  const viejo = el.dataset.r, nuevo = el.value.trim();
+  if(!nuevo) return;
+  if(simRows.includes(nuevo)){ el.value=''; toast('Ese destino ya está en la tabla.', {tipo:'warn'}); return; }
+  simRows = simRows.map(r=>r===viejo?nuevo:r);
+  simCols.forEach(c=>{ if(simVals[kc(viejo,c)]!=null){ simVals[kc(nuevo,c)] = simVals[kc(viejo,c)]; delete simVals[kc(viejo,c)]; } });
+  const cli = simClientes.find(c=>nkey(c.nombre)===nkey(nuevo));
+  simRowTipo[nuevo] = cli ? (cli.tipo==='cliente'?'personal':cli.tipo) : 'puntoVenta'; delete simRowTipo[viejo];
+  simGuardarBorrador(); simRender();
+};
+// Agregar con un clic o arrastrando el ＋ (columnas a la derecha, filas hacia abajo)
+function simAgregarCol(){ const n = simSiguienteSabor(); if(!n) return false; simCols.push(n); return true; }
+function simAgregarRow(){ simRows.push(SIM_PH+uid()); return true; }
+window.simHandle = (ev, modo)=>{
+  ev.preventDefault(); ev.stopPropagation();
+  const x0=ev.clientX, y0=ev.clientY, paso = modo==='col' ? 92 : 26;
+  let agregados=[], movido=false;
+  const mover = e=>{
+    const d = modo==='col' ? e.clientX-x0 : e.clientY-y0;
+    if(Math.abs(d)>6) movido=true;
+    const objetivo = Math.max(0, Math.floor(d/paso));
+    let cambio=false;
+    while(agregados.length<objetivo){
+      if(modo==='col'){ if(!simAgregarCol()) break; agregados.push(simCols[simCols.length-1]); }
+      else{ simAgregarRow(); agregados.push(simRows[simRows.length-1]); }
+      cambio=true;
+    }
+    while(agregados.length>objetivo){
+      const u = agregados[agregados.length-1];
+      if(modo==='col'){ if(simRows.some(r=>simVals[kc(r,u)])) break; simCols = simCols.filter(c=>c!==u); }
+      else{ if(simCols.some(c=>simVals[kc(u,c)])) break; simRows = simRows.filter(r=>r!==u); delete simRowTipo[u]; }
+      agregados.pop(); cambio=true;
+    }
+    if(cambio){ simRender(); simDesplazarFin(modo); }
+  };
+  const soltar = ()=>{
+    document.removeEventListener('pointermove',mover); document.removeEventListener('pointerup',soltar); document.removeEventListener('pointercancel',soltar);
+    if(!movido){
+      if(modo==='col'){ if(!simAgregarCol()) toast('Ya agregaste todos los sabores.', {tipo:'info'}); }
+      else simAgregarRow();
+      simRender(); simDesplazarFin(modo);
+    }
+    simGuardarBorrador();
+    if(modo==='row'){ const i=document.querySelector('.sim-rn'); if(i && !movido) i.focus(); }
+  };
+  document.addEventListener('pointermove',mover); document.addEventListener('pointerup',soltar); document.addEventListener('pointercancel',soltar);
+};
+function simDesplazarFin(modo){ const sc=document.getElementById('simScroll'); if(!sc) return; if(modo==='col') sc.scrollLeft=sc.scrollWidth; else sc.scrollTop=sc.scrollHeight; }
 window.simSetCat = async sel=>{
   const nombre = sel.dataset.c; let cat = sel.value;
   if(cat==='__nuevo'){ cat = (prompt('Nombre del nuevo tipo (ej. Cookie, Pastel):')||'').trim(); if(!cat){ simRender(); return; } }
@@ -1705,31 +1950,10 @@ window.simSetCat = async sel=>{
   try{ await docSet('sabores', s.id, d); }catch(e){}
   simRender();
 };
-window.simPicker = (ev, modo)=>{
-  ev.stopPropagation();
-  document.getElementById('simPop')?.remove();
-  const pop = document.createElement('div'); pop.id='simPop'; pop.className='sim-pop';
-  if(modo==='col'){
-    const disp = simSabores.filter(s=>!simCols.includes(s.nombre)).sort((a,b)=>String(a.nombre).localeCompare(String(b.nombre),'es'));
-    pop.innerHTML = `<p class="qlbl" style="margin-top:0">Agregar sabor</p><div class="qchips">${disp.map(s=>`<button class="qchip" data-n="${esc(s.nombre)}">${esc(s.nombre)}</button>`).join('') || '<span class="text-xs">Ya están todos.</span>'}</div>`;
-    pop.onclick = e=>{ const b=e.target.closest('button[data-n]'); if(!b) return; simCols.push(b.dataset.n); simGuardarBorrador(); pop.remove(); simRender(); const sc=document.getElementById('simScroll'); if(sc) sc.scrollLeft=sc.scrollWidth; };
-  }else{
-    const disp = simClientes.filter(c=>!simRows.includes(c.nombre)).sort((a,b)=>String(a.nombre).localeCompare(String(b.nombre),'es'));
-    pop.innerHTML = `<p class="qlbl" style="margin-top:0">Agregar destino</p><div class="qchips">${disp.map(c=>`<button class="qchip" data-n="${esc(c.nombre)}" data-t="${esc(c.tipo||'')}">${esc(c.nombre)}</button>`).join('')}</div>
-      <p class="qlbl">Otro</p><div class="flex gap-2"><input id="simNuevoR" class="qchip" placeholder="Nombre"><select id="simNuevoT" class="qchip"><option value="puntoVenta">Punto de venta</option><option value="personal">Personal</option><option value="vendedor">Vendedor</option></select><button class="qchip on" id="simNuevoOk">Agregar</button></div>`;
-    const add = (n,t)=>{ if(!n||simRows.includes(n)) return; simRows.push(n); simRowTipo[n]= t==='cliente'?'personal':(t||'puntoVenta'); simGuardarBorrador(); pop.remove(); simRender(); const sc=document.getElementById('simScroll'); if(sc) sc.scrollTop=sc.scrollHeight; };
-    pop.onclick = e=>{ const b=e.target.closest('button[data-n]'); if(b) add(b.dataset.n,b.dataset.t); if(e.target.id==='simNuevoOk') add(document.getElementById('simNuevoR').value.trim(), document.getElementById('simNuevoT').value); };
-  }
-  document.body.appendChild(pop);
-  const r = ev.target.getBoundingClientRect();
-  pop.style.top = Math.min(window.innerHeight-pop.offsetHeight-10, Math.max(10, r.bottom+6))+'px';
-  pop.style.left = Math.max(10, Math.min(window.innerWidth-pop.offsetWidth-10, r.left))+'px';
-};
-document.addEventListener('click', e=>{ const p=document.getElementById('simPop'); if(p && !p.contains(e.target)) p.remove(); });
 
 window.simGuardar = async()=>{
   const items = [];
-  simRows.forEach(r=> simCols.forEach(c=>{
+  simRows.filter(r=>!isPH(r)).forEach(r=> simCols.forEach(c=>{
     const cant = num(simVals[kc(r,c)]);
     if(cant>0) items.push({sabor:c, cliente:r, tipo:simRowTipo[r]||'', cantidad:cant});
   }));
@@ -1756,7 +1980,7 @@ window.simGuardar = async()=>{
       const d={...ins}; delete d.id;
       await docSet('insumos', insId, {...d, existencia: num(ins.existencia)-cant});
     }
-    simCols=[]; simRows=[]; simVals={}; simRowTipo={}; simGuardarBorrador();
+    simDefaults(); simGuardarBorrador();
     toast('Producción de la semana '+w.n+' guardada ('+piezas+' pzs).', {tipo:'ok'});
     window.go('producciones');
   }catch(e){}
